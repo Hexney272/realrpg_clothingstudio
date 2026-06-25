@@ -179,6 +179,33 @@ function drawUV() {
   drawGrid();
   drawUvGuides();
   state.layers.forEach(drawLayer);
+
+  // Kijelölt layer keret + sarok fogantyúk
+  const sel = selectedLayer();
+  if (sel && sel.visible) {
+    const bounds = layerBounds(sel);
+    ctx.save();
+    ctx.strokeStyle = '#d4a853';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(bounds.x, bounds.y, bounds.w, bounds.h);
+    ctx.setLineDash([]);
+
+    // Sarok fogantyúk (resize jelzők)
+    const handleSize = 8;
+    ctx.fillStyle = '#d4a853';
+    const corners = [
+      [bounds.x, bounds.y],
+      [bounds.x + bounds.w, bounds.y],
+      [bounds.x, bounds.y + bounds.h],
+      [bounds.x + bounds.w, bounds.y + bounds.h]
+    ];
+    corners.forEach(([cx, cy]) => {
+      ctx.fillRect(cx - handleSize / 2, cy - handleSize / 2, handleSize, handleSize);
+    });
+    ctx.restore();
+  }
+
   updateShirtPreview();
   renderLayers();
 }
@@ -957,6 +984,33 @@ canvas.addEventListener('mousedown', (e) => {
     drawUV();
   }
 });
+
+// Scroll = méretezés, Shift+Scroll = forgatás (kijelölt layeren)
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const layer = selectedLayer();
+  if (!layer) return;
+
+  pushHistory();
+  const delta = e.deltaY > 0 ? -1 : 1;
+
+  if (e.shiftKey) {
+    // Forgatás: Shift + scroll
+    layer.rotation = (layer.rotation || 0) + delta * 5;
+  } else {
+    // Méretezés: scroll
+    const scaleFactor = 1 + delta * 0.08;
+    if (layer.type === 'text') {
+      layer.size = Math.max(8, Math.round((layer.size || 72) * scaleFactor));
+    } else {
+      layer.w = Math.max(20, Math.round((layer.w || 100) * scaleFactor));
+      layer.h = Math.max(20, Math.round((layer.h || 100) * scaleFactor));
+    }
+  }
+
+  fillProps(layer);
+  drawUV();
+}, { passive: false });
 
 canvas.addEventListener('mousemove', (e) => {
   if (!state.dragging) return;
