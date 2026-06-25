@@ -5,7 +5,7 @@ function Inv.AddPrintedItem(src, category, metadata)
     if not itemName then return false, 'Nincs item ehhez a kategóriához.' end
 
     if Config.Inventory == 'ox_inventory' and GetResourceState('ox_inventory') == 'started' then
-        return exports.ox_inventory:AddItem(src, itemName, 1, metadata)
+        return exports['ox_inventory']:AddItem(src, itemName, 1, metadata)
     end
 
     if RRFW.Name == 'esx' and ServerFW.ESX then
@@ -31,7 +31,7 @@ CreateThread(function()
     if Config.Inventory ~= 'ox_inventory' or GetResourceState('ox_inventory') ~= 'started' then return end
 
     for category, itemName in pairs(Config.Printing.items) do
-        exports.ox_inventory:RegisterUsableItem(itemName, function(source, item)
+        exports['ox_inventory']:RegisterUsableItem(itemName, function(source, item)
             local metadata = item and item.metadata or {}
             TriggerClientEvent('realrpg_clothingstudio:client:wearItem', source, metadata)
         end)

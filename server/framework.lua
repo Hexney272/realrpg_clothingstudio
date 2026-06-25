@@ -21,8 +21,8 @@ function ServerFW.GetIdentifier(src)
         local Player = ServerFW.QB.Functions.GetPlayer(src)
         return Player and Player.PlayerData.citizenid or ('license:' .. src)
     elseif RRFW.Name == 'qbox' then
-        local state = Player(src) and Player(src).state
-        if state and state.citizenid then return state.citizenid end
+        local ok, state = pcall(function() return Player(src).state end)
+        if ok and state and state.citizenid then return state.citizenid end
     end
 
     for _, id in ipairs(GetPlayerIdentifiers(src)) do
@@ -48,8 +48,8 @@ function ServerFW.GetJob(src)
             return Player.PlayerData.job.name, tonumber(Player.PlayerData.job.grade.level) or 0
         end
     elseif RRFW.Name == 'qbox' then
-        local state = Player(src) and Player(src).state
-        if state and state.job then
+        local ok, state = pcall(function() return Player(src).state end)
+        if ok and state and state.job then
             local grade = 0
             if type(state.job.grade) == 'table' then
                 grade = tonumber(state.job.grade.level or state.job.grade.grade or state.job.grade) or 0

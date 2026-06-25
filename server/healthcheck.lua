@@ -131,7 +131,11 @@ function RRCSHealth.BuildReport(mode)
             if parsed and type(parsed) == 'table' then
                 ok('garment manifest', ('pack=%s'):format(parsed.name or 'unnamed'))
                 local slotTotal = 0
-                for _, slot in ipairs(parsed.runtimeSlots or {}) do slotTotal = slotTotal + 1 end
+                for category, slots in pairs(parsed.runtimeSlots or {}) do
+                    if type(slots) == 'table' then
+                        slotTotal = slotTotal + #slots
+                    end
+                end
                 ok('manifest runtime slots', tostring(slotTotal))
             else
                 fail('garment manifest', 'invalid json')

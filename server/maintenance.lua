@@ -149,7 +149,7 @@ function RRCSMaintenance.CleanupOrphans(confirm)
         lines[#lines + 1] = ('Removed stale equipped rows: %s'):format(removedEquipped)
 
         if RRCSAdmin and RRCSAdmin.Audit then
-            RRCSAdmin.Audit(0, 'maintenance_cleanup_orphans', nil, nil, nil, json.encode({ slots = removedSlots, equipped = removedEquipped }))
+            RRCSAdmin.Audit(0, 'maintenance_cleanup_orphans', { details = json.encode({ slots = removedSlots, equipped = removedEquipped }) })
         end
     end
 
