@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>RealRPG DUI Texture Render</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:transparent; }
+canvas { display:block; }
+</style>
+</head>
+<body>
+<canvas id="tex"></canvas>
+<script>
+/**
+ * RealRPG Clothing Studio - DUI Texture Renderer
+ * 
+ * Ez a minimális HTML oldal szolgál a DUI (Direct URL Input) textúra forrásaként.
+ * A FiveM CREATE_DUI natív erre az oldalra mutat, és a renderelt canvas tartalma
+ * lesz a runtime texture, ami a blank garment-re kerül.
+ *
+ * Kommunikáció:
+ * - A kliens SendDuiMessage()-vel küld JSON üzeneteket
+ * - Az oldal rendereli a design layer-eket a canvas-ra
+ * - A DUI handle automatikusan olvassa a renderelt pixeleket
+ *
+ * Üzenet formátum:
+ * {
+ *   action: 'render',
+ *   resolution: 1024,
+ *   layers: [
+ *     { type:'image', src:'base64...', x, y, w, h, rotation, opacity, blend },
+ *     { type:'text', text:'...', x, y, size, color, rotation, opacity, blend },
+ *     { type:'shape', x, y, w, h, color, rotation, opacity, blend, shape:'rect'|'circle' },
+ *     { type:'fill', color:'#fff' }
+ *   ],
+ *   background: '#ffffff'  // opcionális háttér szín
+ * }
+ *
+ * Egyszerűsített üzenet (csak preview kép):
+ * {
+ *   action: 'renderImage',
+ *   resolution: 1024,
+ *   src: 'data:image/png;base64,...'
+ * }
+ *
+ * Törlés:
+ * { action: 'clear' }
+ */
+
+const canvas = document.getElementById('tex');
+const ctx = canvas.getContext('2d');
+
+let currentResolution = 1024;
+let imageCache = {};
+let renderQueue = null;
+let isRendering = false;
+
+function setResolution(res) {
+    res = Math.min(Math.max(res || 1024, 128), 2048);
+    if (canvas.width !== res || canvas.height !== res) {
+        canvas.width = res;
+        canvas.height = res;
+        currentResolution = res;
+    }
+}
+
+function clearCanvas(bg) {
+    if (bg && bg !== 'transparent') {
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, currentResolution, currentResolution);
+    } else {
+        ctx.clearRect(0, 0, currentResolution, currentResolution);
+    }
+}
+
+/**
+ * Kép betöltése cache-ből vagy új Image objektumként
+ */
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        if (imageCache[src]) {
+            resolve(imageCache[src]);
+            return;
+        }
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            imageCache[src] = img;
+            resolve(img);
+        };
+        img.onerror = () => reject(new Error('Image load failed'));
+        img.src = src;
+    });
+}
+
+/**
+ * Egyetlen layer renderelése
+ */
+async function renderLayer(layer) {
+    if (!layer || layer.visible === false) return;
+
+    ctx.save();
+    ctx.globalAlpha = layer.opacity != null ? layer.opacity : 1;
+    ctx.globalCompositeOperation = layer.blend || 'source-over';
+
+    const x = layer.x || 0;
+    const y = layer.y || 0;
+    const rotation = (layer.rotation || 0) * Math.PI / 180;
+
+    ctx.translate(x, y);
+    if (rotation) ctx.rotate(rotation);
+
+    switch (layer.type) {
+        case 'fill':
+            ctx.restore();
+            ctx.save();
+            ctx.globalAlpha = layer.opacity != null ? layer.opacity : 1;
+            ctx.fillStyle = layer.color || '#ffffff';
+            ctx.fillRect(0, 0, currentResolution, currentResolution);
+            break;
+
+        case 'image':
+            if (layer.src) {
+                try {
+                    const img = await loadImage(layer.src);
+                    const w = layer.w || img.width;
+                    const h = layer.h || img.height;
+                    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+                } catch (e) { /* skip broken images */ }
+            }
+            break;
+
+        case 'text':
+            ctx.fillStyle = layer.color || '#000000';
+            ctx.font = `${layer.weight || 'bold'} ${layer.size || 64}px ${layer.font || 'Arial Black'}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(layer.text || '', 0, 0);
+            break;
+
+        case 'shape':
+            ctx.fillStyle = layer.color || '#d7ff00';
+            const sw = layer.w || 100;
+            const sh = layer.h || 100;
+            if (layer.shape === 'circle') {
+                ctx.beginPath();
+                ctx.ellipse(0, 0, sw / 2, sh / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillRect(-sw / 2, -sh / 2, sw, sh);
+            }
+            break;
+    }
+
+    ctx.restore();
+}
+
+/**
+ * Teljes design renderelése (összes layer)
+ */
+async function renderDesign(data) {
+    if (isRendering) {
+        renderQueue = data;
+        return;
+    }
+    isRendering = true;
+
+    try {
+        setResolution(data.resolution || 1024);
+        clearCanvas(data.background || '#ffffff');
+
+        const layers = data.layers || [];
+        for (let i = 0; i < layers.length; i++) {
+            await renderLayer(layers[i]);
+        }
+    } catch (e) {
+        console.error('[DUI Render] Error:', e);
+    }
+
+    isRendering = false;
+
+    // Ha volt közben új request, azt is feldolgozzuk
+    if (renderQueue) {
+        const next = renderQueue;
+        renderQueue = null;
+        renderDesign(next);
+    }
+}
+
+/**
+ * Egyszerű kép renderelés (preview/snapshot alapú)
+ * Ez a leggyakoribb eset: a kliens elküldi a kész canvas képet base64-ben
+ */
+async function renderImage(data) {
+    if (isRendering) {
+        renderQueue = { _type: 'image', ...data };
+        return;
+    }
+    isRendering = true;
+
+    try {
+        setResolution(data.resolution || 1024);
+        clearCanvas('transparent');
+
+        if (data.src) {
+            const img = await loadImage(data.src);
+            ctx.drawImage(img, 0, 0, currentResolution, currentResolution);
+        }
+    } catch (e) {
+        console.error('[DUI Render] Image error:', e);
+    }
+
+    isRendering = false;
+
+    if (renderQueue) {
+        const next = renderQueue;
+        renderQueue = null;
+        if (next._type === 'image') {
+            renderImage(next);
+        } else {
+            renderDesign(next);
+        }
+    }
+}
+
+/**
+ * Üzenet fogadása a FiveM klienstől (SendDuiMessage)
+ */
+window.addEventListener('message', function(event) {
+    const msg = event.data;
+    if (!msg || !msg.action) return;
+
+    switch (msg.action) {
+        case 'render':
+            renderDesign(msg);
+            break;
+
+        case 'renderImage':
+            renderImage(msg);
+            break;
+
+        case 'clear':
+            setResolution(msg.resolution || currentResolution);
+            clearCanvas(msg.background || 'transparent');
+            break;
+
+        case 'setResolution':
+            setResolution(msg.resolution);
+            break;
+    }
+});
+
+// Alapértelmezett canvas inicializálás
+setResolution(1024);
+clearCanvas('#ffffff');
+
+// Jelzés a kliensnek hogy kész vagyunk
+if (window.invokeNative) {
+    // FiveM DUI environment
+    setTimeout(function() {
+        // DUI ready signal - a kliens poll-ozza a state-et
+    }, 100);
+}
+</script>
+</body>
+</html>
