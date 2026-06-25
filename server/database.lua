@@ -33,6 +33,12 @@ function DB.SetEquipped(identifier, category, designId, metadata)
     ]], { identifier, category, designId, json.encode(metadata) })
 end
 
+function DB.DeleteDesign(designId, ownerIdentifier)
+    MySQL.query.await([[
+        DELETE FROM realrpg_clothing_designs WHERE design_id = ? AND owner_identifier = ?
+    ]], { designId, ownerIdentifier })
+end
+
 function DB.RemoveEquipped(identifier, category)
     MySQL.query.await([[
         DELETE FROM realrpg_clothing_equipped WHERE identifier = ? AND category = ?

@@ -36,6 +36,28 @@ RegisterNUICallback('printDesign', function(data, cb)
     cb({ ok = true })
 end)
 
+RegisterNUICallback('loadDesign', function(data, cb)
+    TriggerServerEvent('realrpg_clothingstudio:server:loadDesign', data)
+    cb({ ok = true })
+end)
+
+RegisterNUICallback('deleteDesign', function(data, cb)
+    TriggerServerEvent('realrpg_clothingstudio:server:deleteDesign', data)
+    cb({ ok = true })
+end)
+
 RegisterNetEvent('realrpg_clothingstudio:client:designSaved', function(design)
     SendNUIMessage({ action = 'designSaved', design = design })
+end)
+
+RegisterNetEvent('realrpg_clothingstudio:client:designLoaded', function(design)
+    SendNUIMessage({ action = 'designLoaded', design = design })
+end)
+
+RegisterNetEvent('realrpg_clothingstudio:client:designLoadFailed', function()
+    SendNUIMessage({ action = 'designLoadFailed' })
+end)
+
+RegisterNetEvent('realrpg_clothingstudio:client:designDeleted', function(designId)
+    SendNUIMessage({ action = 'designDeleted', designId = designId })
 end)

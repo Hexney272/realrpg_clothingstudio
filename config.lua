@@ -87,6 +87,17 @@ Config.Marker = {
 -- How close the player must be to open station with E.
 Config.InteractDistance = 2.0
 
+-- Target system: 'ox_target' / 'qb-target' / false (use E key + marker)
+-- Ha engedélyezve van, a marker+E rendszer nem fut, helyette target zone-t regisztrál
+Config.Target = 'ox_target'
+
+-- Target ikon és label
+Config.TargetOptions = {
+    icon = 'fas fa-shirt',
+    label = 'Open Clothing Studio',
+    distance = 2.5
+}
+
 -- ═══════════════════════════════════════════════════════════════
 -- PRINTING (ITEM CREATION)
 -- ═══════════════════════════════════════════════════════════════
@@ -111,8 +122,27 @@ Config.Printing = {
 -- Upload bridge placeholder. In this MVP, designs are stored as JSON in DB.
 -- For production, use a real upload endpoint/CDN or Discord webhook bridge.
 Config.UploadBridge = {
+    -- Master switch: Discord CDN upload engedélyezés
+    -- Ha true, mentéskor a preview kép feltöltődik Discord-ra és az URL mentődik
+    -- A base64 preview_data továbbra is mentődik fallback-ként
     enabled = false,
+
+    -- Discord webhook URL (Szerver Beállítások -> Integrációk -> Webhookok)
+    -- Hozz létre egy dedikált csatornát és webhookot a preview képeknek
     discordWebhook = '',
+
+    -- Webhook megjelenítési név és avatar (opcionális)
+    botName = 'RealRPG Clothing Studio',
+    botAvatar = '',
+
+    -- Maximális fájlméret (bytes) - Discord limit: 25MB free, de mi 4MB-re korlátozzuk
+    maxFileSize = 4 * 1024 * 1024,
+
+    -- Képformátum: 'png' vagy 'jpeg' (jpeg kisebb, png jobb minőség)
+    format = 'png',
+
+    -- Ha a feltöltés sikertelen, mentse-e a base64 preview-t a DB-be fallback-ként?
+    fallbackToBase64 = true,
 }
 
 -- ═══════════════════════════════════════════════════════════════

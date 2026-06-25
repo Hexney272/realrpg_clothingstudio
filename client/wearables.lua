@@ -185,15 +185,86 @@ end
 -- EVENTS - ITEM HASZNÁLAT
 -- ═══════════════════════════════════════════════════════════════
 
---- Item használatkor triggerelve (ox_inventory RegisterUsableItem -> server -> client)
+--- Új: item használat context menu-vel (Felvesz / Levesz / Előnézet)
+--- Ez az event jön az inventory usable item-ből
+RegisterNetEvent('realrpg_clothingstudio:client:useClothingItem', function(data)
+    if type(data) ~= 'table' or type(data.metadata) ~= 'table' then return end
+
+    local metadata = data.metadata
+    local category = data.category or metadata.category or 'tops'
+    local isWearing = equipped[category] and equipped[category].designId == metadata.designId
+
+    -- ox_lib context menu (ha elérhető)
+    if lib and lib.registerContext then
+        local options = {}
+
+        if isWearing then
+            options[#options + 1] = {
+                title = 'Levesz',
+                description = 'Ruha levétele',
+                icon = 'shirt',
+                iconColor = '#ff4444',
+                onSelect = function()
+                    removeDesignFromSelf(category)
+                    TriggerServerEvent('realrpg_clothingstudio:server:removeEquipped', category)
+                end
+            }
+        else
+            options[#options + 1] = {
+                title = 'Felvesz',
+                description = metadata.label or 'Egyedi design felvétele',
+                icon = 'shirt',
+                iconColor = '#d7ff00',
+                onSelect = function()
+                    applyDesignToSelf(metadata)
+                    TriggerServerEvent('realrpg_clothingstudio:server:setEquipped', metadata)
+                end
+            }
+        end
+
+        options[#options + 1] = {
+            title = 'Előnézet',
+            description = 'Design megtekintése a karakteren',
+            icon = 'eye',
+            iconColor = '#4488ff',
+            onSelect = function()
+                -- Ideiglenes preview (nem menti equipped-ként)
+                applyDesignToSelf(metadata)
+                -- 5 mp múlva visszaállítjuk ha nem erősíti meg
+                SetTimeout(5000, function()
+                    if not (equipped[category] and equipped[category].designId == metadata.designId) then
+                        removeDesignFromSelf(category)
+                    end
+                end)
+            end
+        }
+
+        lib.registerContext({
+            id = 'realrpg_clothing_use',
+            title = metadata.label or 'Printed Clothing',
+            options = options
+        })
+        lib.showContext('realrpg_clothing_use')
+    else
+        -- Fallback: egyszerű toggle (ha nincs ox_lib)
+        if isWearing then
+            removeDesignFromSelf(category)
+            TriggerServerEvent('realrpg_clothingstudio:server:removeEquipped', category)
+        else
+            applyDesignToSelf(metadata)
+            TriggerServerEvent('realrpg_clothingstudio:server:setEquipped', metadata)
+        end
+    end
+end)
+
+--- Régi event: direkt felvétel (kompatibilitás - más resource-ok hívhatják)
 RegisterNetEvent('realrpg_clothingstudio:client:wearItem', function(metadata)
     if type(metadata) ~= 'table' then return end
     applyDesignToSelf(metadata)
-    -- Server-nek is jelezzük az equipped state-et
     TriggerServerEvent('realrpg_clothingstudio:server:setEquipped', metadata)
 end)
 
---- Design levétele
+--- Design levétele (direkt event - más resource-ok vagy command hívhatja)
 RegisterNetEvent('realrpg_clothingstudio:client:unwearItem', function(category)
     category = category or 'tops'
     removeDesignFromSelf(category)
@@ -352,3 +423,83 @@ end
 
 exports('GetEquippedDesigns', GetEquippedDesigns)
 exports('HasDUIDesign', HasDUIDesign)
+
+-- ═══════════════════════════════════════════════════════════════
+-- COMMANDS
+-- ═══════════════════════════════════════════════════════════════
+
+--- Notify helper (wearables scope)
+local function wearNotify(msg, typ)
+    if lib and lib.notify then
+        lib.notify({ description = msg, type = typ or 'info' })
+    else
+        TriggerEvent('realrpg_clothingstudio:client:notify', msg, typ)
+    end
+end
+
+--- /unwear [category] - ruha levétele paranccsal
+RegisterCommand('unwear', function(_, args)
+    local category = args[1] or nil
+
+    if not category then
+        -- Ha nincs megadva kategória: ox_lib menü az összes viselt darabról
+        if lib and lib.registerContext then
+            local options = {}
+            local hasAny = false
+            for cat, meta in pairs(equipped) do
+                hasAny = true
+                options[#options + 1] = {
+                    title = ('Levesz: %s'):format(meta.label or cat),
+                    description = cat:upper(),
+                    icon = 'xmark',
+                    iconColor = '#ff4444',
+                    onSelect = function()
+                        removeDesignFromSelf(cat)
+                        TriggerServerEvent('realrpg_clothingstudio:server:removeEquipped', cat)
+                    end
+                }
+            end
+
+            if not hasAny then
+                wearNotify('Nincs viselt egyedi ruha.', 'info')
+                return
+            end
+
+            options[#options + 1] = {
+                title = 'Összes levétele',
+                description = 'Minden egyedi ruha levétele',
+                icon = 'trash',
+                iconColor = '#ff6600',
+                onSelect = function()
+                    for cat in pairs(equipped) do
+                        removeDesignFromSelf(cat)
+                        TriggerServerEvent('realrpg_clothingstudio:server:removeEquipped', cat)
+                    end
+                end
+            }
+
+            lib.registerContext({
+                id = 'realrpg_unwear_menu',
+                title = 'Viselt egyedi ruhák',
+                options = options
+            })
+            lib.showContext('realrpg_unwear_menu')
+        else
+            -- Nincs ox_lib: mindent leveszünk
+            for cat in pairs(equipped) do
+                removeDesignFromSelf(cat)
+                TriggerServerEvent('realrpg_clothingstudio:server:removeEquipped', cat)
+            end
+            wearNotify('Minden egyedi ruha levéve.', 'info')
+        end
+    else
+        -- Megadott kategória levétele
+        if equipped[category] then
+            removeDesignFromSelf(category)
+            TriggerServerEvent('realrpg_clothingstudio:server:removeEquipped', category)
+            wearNotify(('Levéve: %s'):format(category), 'success')
+        else
+            wearNotify(('Nincs viselt ruha ebben a kategóriában: %s'):format(category), 'error')
+        end
+    end
+end, false)

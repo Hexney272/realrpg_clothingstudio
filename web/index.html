@@ -11,31 +11,58 @@
     <header class="topbar">
       <div class="brand"><span class="logo">83' RSCD</span><small>Clothing Studio</small></div>
       <div class="tools">
-        <button data-tool="new">NEW</button><button data-tool="open">OPEN</button><button id="saveBtn">SAVE</button>
+        <button data-tool="new" id="newBtn">NEW</button><button data-tool="open" id="openBtn">OPEN</button><button id="saveBtn">SAVE</button>
         <button id="undoBtn">UNDO</button><button id="redoBtn">REDO</button>
         <button class="active" data-mode="select">SELECT</button><button data-mode="brush">BRUSH</button><button data-mode="text">TEXT</button>
         <button id="addShapeBtn">SHAPES</button><button id="imageBtn">IMAGE</button><button id="aiBtn">AI</button>
       </div>
-      <button id="closeBtn" class="close">×</button>
+      <button id="closeBtn" class="close">&times;</button>
     </header>
 
     <main class="layout">
       <aside class="library panel">
         <div class="tabs"><button class="tab active" data-tab="library">LIBRARY</button><button class="tab" data-tab="my">MY DESIGNS</button></div>
-        <input id="search" placeholder="Search silhouettes..." />
-        <div class="categories">
-          <button class="cat active" data-cat="tops">TOPS</button><button class="cat" data-cat="undershirt">UNDER</button><button class="cat" data-cat="pants">PANTS</button><button class="cat" data-cat="shoes">SHOES</button>
+
+        <!-- LIBRARY TAB CONTENT -->
+        <div id="libraryContent">
+          <input id="search" placeholder="Search silhouettes..." />
+          <div class="categories">
+            <button class="cat active" data-cat="tops">TOPS</button><button class="cat" data-cat="undershirt">UNDER</button><button class="cat" data-cat="pants">PANTS</button><button class="cat" data-cat="shoes">SHOES</button>
+          </div>
+          <div class="gender"><button class="genderBtn active" data-gender="male">MALE</button><button class="genderBtn" data-gender="female">FEMALE</button></div>
+          <h4>SILHOUETTES <span id="count"></span></h4>
+          <div id="templateGrid" class="gridlist"></div>
+          <section class="details"><h4>DETAILS</h4><p id="details">No model selected<br/>Choose from the library</p><button id="useTemplate">USE THIS TEMPLATE</button></section>
         </div>
-        <div class="gender"><button class="genderBtn active" data-gender="male">MALE</button><button class="genderBtn" data-gender="female">FEMALE</button></div>
-        <h4>SILHOUETTES <span id="count"></span></h4>
-        <div id="templateGrid" class="gridlist"></div>
-        <section class="details"><h4>DETAILS</h4><p id="details">No model selected<br/>Choose from the library</p><button id="useTemplate">USE THIS TEMPLATE</button></section>
+
+        <!-- MY DESIGNS TAB CONTENT -->
+        <div id="myDesignsContent" class="hidden">
+          <div class="myDesignsHeader">
+            <input id="designSearch" placeholder="Search your designs..." />
+            <div class="designFilters">
+              <button class="dfilt active" data-dcat="all">ALL</button><button class="dfilt" data-dcat="tops">TOPS</button><button class="dfilt" data-dcat="pants">PANTS</button><button class="dfilt" data-dcat="shoes">SHOES</button>
+            </div>
+          </div>
+          <div id="myDesignsGrid" class="designsGrid"></div>
+          <div id="designDetail" class="designDetailPanel hidden">
+            <div class="designDetailPreview"><img id="designDetailImg" src="" alt=""/></div>
+            <div class="designDetailInfo">
+              <h4 id="designDetailName">Design Name</h4>
+              <p id="designDetailMeta"></p>
+              <div class="designDetailActions">
+                <button id="loadDesignBtn" class="actionBtn green">OPEN / EDIT</button>
+                <button id="deleteDesignBtn" class="actionBtn red">DELETE</button>
+              </div>
+            </div>
+          </div>
+          <p id="noDesigns" class="muted">No saved designs yet</p>
+        </div>
       </aside>
 
-      <section class="preview panel"><h3><span></span> LIVE PREVIEW</h3><div class="dummy3d"><div id="shirt3d"><div id="shirtDesign"></div></div></div><div class="zoomBtns"><button>⌕</button><button>⟳</button></div></section>
+      <section class="preview panel"><h3><span></span> LIVE PREVIEW</h3><div class="dummy3d"><div id="shirt3d"><div id="shirtDesign"></div></div></div><div class="zoomBtns"><button>&#8981;</button><button>&#10227;</button></div></section>
 
       <section class="editor panel">
-        <h3>⌁ UV EDITOR <small id="activeTemplate">empty - 1024x1024</small></h3>
+        <h3>&#8961; UV EDITOR <small id="activeTemplate">empty - 1024x1024</small></h3>
         <div class="canvasWrap"><canvas id="uvCanvas" width="1024" height="1024"></canvas></div>
         <div class="editorBottom">
           <div class="quick"><button id="gridBtn">GRID</button><button id="mirrorBtn">MIRROR X</button><button id="lockBtn">LOCK UV</button></div>
@@ -50,7 +77,30 @@
       </aside>
     </main>
 
-    <footer class="bottombar"><div class="barcode">Los Santos Customs ▌▌▌▌▌▌</div><button class="big orange">BUILD IT</button><button id="printBtn" class="big orange2">PRINT IT</button><button class="big">REP IT</button><div class="activeDesign"><small>ACTIVE DESIGN</small><b id="designName">Untitled Design</b></div><button id="readyBtn" class="ready">READY TO PRINT</button></footer>
+    <footer class="bottombar"><div class="barcode">Los Santos Customs &#9612;&#9612;&#9612;&#9612;&#9612;&#9612;</div><button class="big orange">BUILD IT</button><button id="printBtn" class="big orange2">PRINT IT</button><button class="big">REP IT</button><div class="activeDesign"><small>ACTIVE DESIGN</small><b id="designName">Untitled Design</b></div><button id="readyBtn" class="ready">READY TO PRINT</button></footer>
+
+    <!-- Toast container -->
+    <div class="toastContainer"></div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loadingOverlay hidden">
+      <div class="loadingContent">
+        <div class="loadingSpinner"></div>
+        <p id="loadingText">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Confirm dialog -->
+    <div id="confirmDialog" class="confirmDialog hidden">
+      <div class="confirmBox">
+        <h3 id="confirmTitle">Confirm</h3>
+        <p id="confirmText"></p>
+        <div class="confirmActions">
+          <button id="confirmYes" class="actionBtn green">YES</button>
+          <button id="confirmNo" class="actionBtn red">NO</button>
+        </div>
+      </div>
+    </div>
 
     <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
   </div>

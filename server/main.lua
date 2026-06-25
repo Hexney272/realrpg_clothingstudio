@@ -127,6 +127,16 @@ RegisterNetEvent('realrpg_clothingstudio:server:saveDesign', function(payload)
         preview_data = preview,
         image_url = payload.imageUrl
     })
+
+    -- Discord CDN upload (aszinkron - a játékosnak nem kell várnia)
+    if Config.UploadBridge.enabled and preview and preview ~= '' then
+        CreateThread(function()
+            local imageUrl = Upload.UploadDesignPreview(designId, preview, label)
+            if imageUrl and Config.Debug then
+                print(('[^2RealRPG Server^0] Design %s preview uploaded to Discord CDN.'):format(designId))
+            end
+        end)
+    end
 end)
 
 -- ═══════════════════════════════════════════════════════════════
@@ -365,4 +375,85 @@ end)
 
 RegisterNetEvent('QBCore:Server:PlayerLoaded', function(Player)
     -- QB: a kliens oldal triggereli a requestEquipped-et
+end)
+
+-- ═══════════════════════════════════════════════════════════════
+-- DESIGN LOAD / DELETE (My Designs panel)
+-- ═══════════════════════════════════════════════════════════════
+
+RegisterNetEvent('realrpg_clothingstudio:server:loadDesign', function(payload)
+    local src = source
+    if type(payload) ~= 'table' or not payload.designId then return end
+
+    local identifier = ServerFW.GetIdentifier(src)
+    local design = DB.GetDesign(payload.designId)
+
+    if not design then
+        notify(src, 'A design nem talalhato.', 'error')
+        TriggerClientEvent('realrpg_clothingstudio:client:designLoadFailed', src)
+        return
+    end
+
+    -- Biztonsagi ellenorzes: csak sajat designt toltheti be
+    if design.owner_identifier ~= identifier then
+        notify(src, 'Ez nem a te designed.', 'error')
+        TriggerClientEvent('realrpg_clothingstudio:client:designLoadFailed', src)
+        return
+    end
+
+    TriggerClientEvent('realrpg_clothingstudio:client:designLoaded', src, {
+        design_id = design.design_id,
+        label = design.label,
+        gender = design.gender,
+        category = design.category,
+        template_id = design.template_id,
+        garment_id = design.garment_id,
+        design_json = design.design_json,
+        preview_data = design.preview_data,
+        image_url = design.image_url,
+        created_at = design.created_at
+    })
+
+    if Config.Debug then
+        print(('[^2RealRPG Server^0] Player %d loaded design: %s'):format(src, design.design_id))
+    end
+end)
+
+RegisterNetEvent('realrpg_clothingstudio:server:deleteDesign', function(payload)
+    local src = source
+    if type(payload) ~= 'table' or not payload.designId then return end
+
+    local identifier = ServerFW.GetIdentifier(src)
+    local design = DB.GetDesign(payload.designId)
+
+    if not design then
+        notify(src, 'A design nem talalhato.', 'error')
+        return
+    end
+
+    -- Biztonsagi ellenorzes
+    if design.owner_identifier ~= identifier then
+        notify(src, 'Ez nem a te designed.', 'error')
+        return
+    end
+
+    DB.DeleteDesign(payload.designId, identifier)
+
+    -- Ha jelenleg viseli ezt a designt, torolje az equipped state-et is
+    if equippedCache[identifier] then
+        for category, meta in pairs(equippedCache[identifier]) do
+            if meta.designId == payload.designId then
+                DB.RemoveEquipped(identifier, category)
+                equippedCache[identifier][category] = nil
+                TriggerClientEvent('realrpg_clothingstudio:client:playerUnequipped', -1, src, category)
+            end
+        end
+    end
+
+    notify(src, 'Design torolve.', 'success')
+    TriggerClientEvent('realrpg_clothingstudio:client:designDeleted', src, payload.designId)
+
+    if Config.Debug then
+        print(('[^3RealRPG Server^0] Player %d deleted design: %s'):format(src, payload.designId))
+    end
 end)
