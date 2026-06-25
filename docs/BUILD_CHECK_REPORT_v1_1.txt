@@ -1,0 +1,8 @@
+CHECK_OK: required files present
+CHECK_OK: manifest JSON valid
+CHECK_OK: fxmanifest refs ok
+CHECK_OK: v1.1 config keys
+CHECK_OK: v1.1 healthcheck hooks
+CHECK_OK: raw Lua delimiter scan completed
+CHECK_OK: node --check web/app.js
+CHECK_OK: zip integrity test

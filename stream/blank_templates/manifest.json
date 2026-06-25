@@ -1,0 +1,50 @@
+{
+  "name": "RealRPG Blank Garment Pack Example",
+  "version": "0.5.0",
+  "description": "Manifest based clothing template/slot loader. Replace drawables and txd names after your actual .ydd/.ytd pack is made.",
+  "runtimeSlots": {
+    "tops": [
+      { "slot": 101, "component": 11, "drawable": 101, "texture": 0, "txd": "realrpg_pack_top_101", "txn": "blank_diffuse", "pack": "example_pack" },
+      { "slot": 102, "component": 11, "drawable": 102, "texture": 0, "txd": "realrpg_pack_top_102", "txn": "blank_diffuse", "pack": "example_pack" },
+      { "slot": 103, "component": 11, "drawable": 103, "texture": 0, "txd": "realrpg_pack_top_103", "txn": "blank_diffuse", "pack": "example_pack" },
+      { "slot": 104, "component": 11, "drawable": 104, "texture": 0, "txd": "realrpg_pack_top_104", "txn": "blank_diffuse", "pack": "example_pack" }
+    ],
+    "undershirt": [
+      { "slot": 101, "component": 8, "drawable": 101, "texture": 0, "txd": "realrpg_pack_under_101", "txn": "blank_diffuse", "pack": "example_pack" },
+      { "slot": 102, "component": 8, "drawable": 102, "texture": 0, "txd": "realrpg_pack_under_102", "txn": "blank_diffuse", "pack": "example_pack" }
+    ],
+    "pants": [
+      { "slot": 101, "component": 4, "drawable": 101, "texture": 0, "txd": "realrpg_pack_pants_101", "txn": "blank_diffuse", "pack": "example_pack" },
+      { "slot": 102, "component": 4, "drawable": 102, "texture": 0, "txd": "realrpg_pack_pants_102", "txn": "blank_diffuse", "pack": "example_pack" }
+    ],
+    "shoes": [
+      { "slot": 101, "component": 6, "drawable": 101, "texture": 0, "txd": "realrpg_pack_shoes_101", "txn": "blank_diffuse", "pack": "example_pack" },
+      { "slot": 102, "component": 6, "drawable": 102, "texture": 0, "txd": "realrpg_pack_shoes_102", "txn": "blank_diffuse", "pack": "example_pack" }
+    ]
+  },
+  "templates": {
+    "male": {
+      "tops": [
+        { "id": "m_pack_top_101", "label": "Pack Blank Tee 101", "component": 11, "drawable": 101, "texture": 0, "runtimeSlot": 101, "preview": "assets/tshirt.png", "uv": "assets/uv_tshirt.png", "pack": "example_pack" },
+        { "id": "m_pack_top_102", "label": "Pack Blank Tee 102", "component": 11, "drawable": 102, "texture": 0, "runtimeSlot": 102, "preview": "assets/tshirt.png", "uv": "assets/uv_tshirt.png", "pack": "example_pack" }
+      ],
+      "undershirt": [
+        { "id": "m_pack_under_101", "label": "Pack Undershirt 101", "component": 8, "drawable": 101, "texture": 0, "runtimeSlot": 101, "preview": "assets/tshirt.png", "uv": "assets/uv_tshirt.png", "pack": "example_pack" }
+      ],
+      "pants": [
+        { "id": "m_pack_pants_101", "label": "Pack Pants 101", "component": 4, "drawable": 101, "texture": 0, "runtimeSlot": 101, "preview": "assets/pants.png", "uv": "assets/uv_pants.png", "pack": "example_pack" }
+      ],
+      "shoes": [
+        { "id": "m_pack_shoes_101", "label": "Pack Shoes 101", "component": 6, "drawable": 101, "texture": 0, "runtimeSlot": 101, "preview": "assets/shoes.png", "uv": "assets/uv_shoes.png", "pack": "example_pack" }
+      ]
+    },
+    "female": {
+      "tops": [
+        { "id": "f_pack_top_101", "label": "Female Pack Blank Tee 101", "component": 11, "drawable": 101, "texture": 0, "runtimeSlot": 101, "preview": "assets/tshirt.png", "uv": "assets/uv_tshirt.png", "pack": "example_pack" }
+      ],
+      "undershirt": [],
+      "pants": [],
+      "shoes": []
+    }
+  }
+}

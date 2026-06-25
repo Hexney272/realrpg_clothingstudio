@@ -1,0 +1,21 @@
+# RealRPG Clothing Studio recommended ensure order
+
+ensure oxmysql
+ensure ox_inventory
+
+# Optional dependencies if you use them
+# ensure ox_target
+# ensure es_extended
+# ensure qb-core
+# ensure qbx_core
+
+ensure realrpg_clothingstudio
+
+# Admin permission
+add_ace group.admin realrpg.clothing.admin allow
+
+# Useful first run commands after restart:
+# /rrcs_version
+# /rrcs_selftest
+# /rrcs_health
+# /rrcs_packcheck

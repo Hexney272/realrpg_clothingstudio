@@ -1,0 +1,19 @@
+RealRPG Clothing Studio v1.0 build check
+
+CHECK_OK: required files present
+CHECK_OK: fxmanifest version bumped to 1.0.0
+CHECK_OK: server/admin.lua included in fxmanifest
+CHECK_OK: admin config keys present
+CHECK_OK: security config keys present
+CHECK_OK: audit config keys present
+CHECK_OK: admin commands implemented
+CHECK_OK: DB admin helpers implemented
+CHECK_OK: SQL audit table present
+CHECK_OK: marketplace moderation migration present
+CHECK_OK: node --check web/app.js
+CHECK_OK: manifest JSON valid
+CHECK_OK: raw Lua delimiter scan completed
+CHECK_OK: zip integrity test
+
+Runtime note:
+Full FiveM runtime verification still requires an actual server with oxmysql, ox_inventory, framework, webhook/API keys and blank garment pack.

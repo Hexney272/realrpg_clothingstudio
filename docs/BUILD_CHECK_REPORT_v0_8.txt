@@ -1,0 +1,14 @@
+RealRPG Clothing Studio v0.8 build check
+
+CHECK_OK: required files present
+CHECK_OK: manifest JSON valid
+CHECK_OK: fxmanifest refs ok
+CHECK_OK: raw Lua delimiter scan ok
+CHECK_OK: v0.8 app hooks ok
+CHECK_OK: v0.8 config keys ok
+CHECK_OK: v0.8 server hooks ok
+CHECK_OK: ai bridge implementation ok
+CHECK_OK: sql ai history table ok
+CHECK_OK: node --check web/app.js
+
+Note: full FiveM runtime validation requires starting the resource on a FiveM server with oxmysql/ox_inventory and the configured Gemini API key.

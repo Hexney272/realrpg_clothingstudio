@@ -1,0 +1,46 @@
+CHECK_OK: required file present: fxmanifest.lua
+CHECK_OK: required file present: config.lua
+CHECK_OK: required file present: server/main.lua
+CHECK_OK: required file present: server/database.lua
+CHECK_OK: required file present: server/framework.lua
+CHECK_OK: required file present: server/inventory.lua
+CHECK_OK: required file present: server/upload_bridge.lua
+CHECK_OK: required file present: server/ai_bridge.lua
+CHECK_OK: required file present: client/studio.lua
+CHECK_OK: required file present: web/app.js
+CHECK_OK: required file present: web/index.html
+CHECK_OK: required file present: web/style.css
+CHECK_OK: required file present: sql/install.sql
+CHECK_OK: required file present: docs/MARKETPLACE_WORKFLOW.md
+CHECK_OK: required file present: stream/blank_templates/manifest.json
+CHECK_OK: manifest JSON valid
+CHECK_OK: fxmanifest references server/database.lua
+CHECK_OK: fxmanifest references server/framework.lua
+CHECK_OK: fxmanifest references server/upload_bridge.lua
+CHECK_OK: fxmanifest references server/ai_bridge.lua
+CHECK_OK: fxmanifest references server/main.lua
+CHECK_OK: fxmanifest references web/app.js
+CHECK_OK: fxmanifest references web/index.html
+CHECK_OK: fxmanifest references docs/*.md
+CHECK_OK: node --check web/app.js
+CHECK_OK: v0.9 config key present: Config.Marketplace
+CHECK_OK: v0.9 config key present: marketCheckCommand
+CHECK_OK: v0.9 config key present: claimMarketCommand
+CHECK_OK: v0.9 config key present: sellerCommissionPercent
+CHECK_OK: v0.9 server hook present: publishDesign
+CHECK_OK: v0.9 server hook present: unpublishDesign
+CHECK_OK: v0.9 server hook present: buyMarketplaceDesign
+CHECK_OK: v0.9 server hook present: refreshMarketplace
+CHECK_OK: v0.9 server hook present: rrcs_marketcheck
+CHECK_OK: v0.9 server hook present: rrcs_claimmarket
+CHECK_OK: v0.9 server hook present: createPrintedItemFromDesign
+CHECK_OK: v0.9 NUI hook present: marketplace
+CHECK_OK: v0.9 NUI hook present: publishDesignBtn
+CHECK_OK: v0.9 NUI hook present: buyMarketBtn
+CHECK_OK: v0.9 NUI hook present: marketplaceData
+CHECK_OK: v0.9 NUI hook present: buyMarketplaceDesign
+CHECK_OK: v0.9 NUI hook present: PUBLISH DESIGN
+CHECK_OK: v0.9 SQL table present: realrpg_clothing_marketplace
+CHECK_OK: v0.9 SQL table present: realrpg_clothing_marketplace_sales
+CHECK_OK: v0.9 SQL table present: realrpg_clothing_marketplace_payouts
+CHECK_OK: raw Lua scan completed

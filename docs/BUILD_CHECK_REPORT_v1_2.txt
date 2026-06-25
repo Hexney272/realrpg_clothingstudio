@@ -1,0 +1,13 @@
+RealRPG Clothing Studio v1.2 Build Check
+
+CHECK_OK: required files present
+CHECK_OK: manifest JSON valid
+CHECK_OK: fxmanifest refs ok
+CHECK_OK: v1.2 config keys
+CHECK_OK: v1.2 maintenance hooks
+CHECK_OK: v1.2 texture cache hooks
+CHECK_OK: raw Lua delimiter scan completed
+CHECK_OK: node --check web/app.js
+CHECK_OK: zip integrity test
+
+Note: Full FiveM runtime testing still requires a live server with oxmysql, ox_inventory, framework, API/webhook keys and the real blank garment pack.
