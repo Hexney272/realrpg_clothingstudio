@@ -115,16 +115,10 @@ local function buildPayload(prompt, negativePrompt)
         finalPrompt = finalPrompt .. '\nAvoid: ' .. negativePrompt
     end
 
+    -- Interactions API: minimal format that works
     return json.encode({
         model = Config.AI.model or 'gemini-2.5-flash-image',
-        input = {
-            { type = 'text', text = finalPrompt }
-        },
-        response_format = {
-            type = 'image',
-            mime_type = 'image/png',
-            aspect_ratio = '1:1'
-        }
+        input = finalPrompt
     })
 end
 
@@ -186,13 +180,13 @@ function AIBridge.Generate(src, payload)
         return
     end
 
-    -- New Interactions API endpoint
-    local endpoint = 'https://generativelanguage.googleapis.com/v1beta/interactions'
+    -- New Interactions API endpoint (key in URL as fallback for FiveM PerformHttpRequest)
+    local endpoint = ('https://generativelanguage.googleapis.com/v1beta/interactions?key=%s'):format(apiKey)
     local body = buildPayload(prompt, negativePrompt)
 
     notify(src, 'AI design generálása folyamatban...', 'info')
     print(('[^3RealRPG AI^0] Player %d generating: "%s" | Model: %s'):format(src, prompt:sub(1, 60), Config.AI.model or '?'))
-    print(('[^3RealRPG AI^0] Endpoint: %s (Interactions API)'):format(endpoint))
+    print(('[^3RealRPG AI^0] Body: %s'):format(body:sub(1, 300)))
 
     PerformHttpRequest(endpoint, function(status, response)
         print(('[^3RealRPG AI^0] Response status: %s | Body length: %s'):format(tostring(status), response and #response or 0))

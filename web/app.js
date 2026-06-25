@@ -937,6 +937,7 @@ document.querySelectorAll('.tabAction').forEach((button) => {
 });
 
 canvas.addEventListener('mousedown', (e) => {
+  e.preventDefault();
   const point = canvasPoint(e);
 
   if (state.currentMode === 'brush') {
@@ -949,6 +950,7 @@ canvas.addEventListener('mousedown', (e) => {
 
   const hit = hitTest(point);
   if (hit) {
+    pushHistory();
     state.selectedLayer = hit.id;
     fillProps(hit);
     state.dragging = { type: 'move', layerId: hit.id, offsetX: point.x - hit.x, offsetY: point.y - hit.y };
@@ -957,6 +959,8 @@ canvas.addEventListener('mousedown', (e) => {
 });
 
 canvas.addEventListener('mousemove', (e) => {
+  if (!state.dragging) return;
+  e.preventDefault();
   const point = canvasPoint(e);
 
   if (state.currentMode === 'brush' && state.drawing && state.dragging) {
