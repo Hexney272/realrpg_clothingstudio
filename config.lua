@@ -74,8 +74,9 @@ Config.AI = {
     enabled = false,
     provider = 'gemini',
     apiKey = '',
-    model = 'gemini-2.0-flash-exp-image-generation',
-    endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s',
+    model = 'gemini-2.5-flash-image',
+    -- Az endpoint már nem kell - az ai_bridge.lua az Interactions API-t használja automatikusan
+    endpoint = 'https://generativelanguage.googleapis.com/v1beta/interactions',
     cooldownSeconds = 60,
     maxPromptLength = 420,
     maxNegativePromptLength = 240,

@@ -77,21 +77,33 @@ local function base64Encode(data)
 end
 
 local function extractGeminiImage(decoded)
-    local candidates = decoded and decoded.candidates
-    if type(candidates) ~= 'table' or not candidates[1] then return nil, nil, nil end
+    -- New Interactions API response format
+    local steps = decoded and decoded.steps
+    if type(steps) ~= 'table' then return nil, nil, nil end
 
-    local content = candidates[1].content or {}
-    local parts = content.parts or {}
     local textParts = {}
 
-    for _, part in ipairs(parts) do
-        if type(part) == 'table' then
-            if part.text then textParts[#textParts + 1] = tostring(part.text) end
-            local inline = part.inlineData or part.inline_data or part.inline_data_part
-            if type(inline) == 'table' and inline.data then
-                return inline.data, inline.mimeType or inline.mime_type or 'image/png', table.concat(textParts, '\n')
+    for _, step in ipairs(steps) do
+        if type(step) == 'table' and step.type == 'model_output' then
+            local content = step.content
+            if type(content) == 'table' then
+                for _, block in ipairs(content) do
+                    if type(block) == 'table' then
+                        if block.type == 'text' and block.text then
+                            textParts[#textParts + 1] = tostring(block.text)
+                        end
+                        if block.type == 'image' and block.data then
+                            return block.data, block.mime_type or 'image/png', table.concat(textParts, '\n')
+                        end
+                    end
+                end
             end
         end
+    end
+
+    -- Fallback: check output_image at top level
+    if decoded.output_image and decoded.output_image.data then
+        return decoded.output_image.data, decoded.output_image.mime_type or 'image/png', table.concat(textParts, '\n')
     end
 
     return nil, nil, table.concat(textParts, '\n')
@@ -104,16 +116,14 @@ local function buildPayload(prompt, negativePrompt)
     end
 
     return json.encode({
-        contents = {
-            {
-                role = 'user',
-                parts = {
-                    { text = finalPrompt }
-                }
-            }
+        model = Config.AI.model or 'gemini-2.5-flash-image',
+        input = {
+            { type = 'text', text = finalPrompt }
         },
-        generationConfig = {
-            responseModalities = { 'TEXT', 'IMAGE' }
+        response_format = {
+            type = 'image',
+            mime_type = 'image/png',
+            aspect_ratio = '1:1'
         }
     })
 end
@@ -176,12 +186,13 @@ function AIBridge.Generate(src, payload)
         return
     end
 
-    local endpoint = (Config.AI.endpoint or ''):format(Config.AI.model or 'gemini-2.0-flash-preview-image-generation', apiKey)
+    -- New Interactions API endpoint
+    local endpoint = 'https://generativelanguage.googleapis.com/v1beta/interactions'
     local body = buildPayload(prompt, negativePrompt)
 
     notify(src, 'AI design generálása folyamatban...', 'info')
     print(('[^3RealRPG AI^0] Player %d generating: "%s" | Model: %s'):format(src, prompt:sub(1, 60), Config.AI.model or '?'))
-    print(('[^3RealRPG AI^0] Endpoint: %s'):format(endpoint:gsub(apiKey, 'KEY_HIDDEN')))
+    print(('[^3RealRPG AI^0] Endpoint: %s (Interactions API)'):format(endpoint))
 
     PerformHttpRequest(endpoint, function(status, response)
         print(('[^3RealRPG AI^0] Response status: %s | Body length: %s'):format(tostring(status), response and #response or 0))
@@ -251,7 +262,8 @@ function AIBridge.Generate(src, payload)
             finish(nil, nil)
         end
     end, 'POST', body, {
-        ['Content-Type'] = 'application/json'
+        ['Content-Type'] = 'application/json',
+        ['x-goog-api-key'] = apiKey
     })
 end
 
