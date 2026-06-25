@@ -203,19 +203,12 @@ function RRCSHealth.BuildReport(mode)
 end
 
 RegisterCommand((Config.Healthcheck and Config.Healthcheck.command) or (Config.Admin and Config.Admin.healthCommand) or 'rrcs_health', function(src)
-    if not hasAdmin(src) then
-        TriggerClientEvent('realrpg_clothingstudio:client:notify', src, 'Nincs jogosultságod ehhez a parancshoz.', 'error')
-        return
-    end
+    -- Health/selftest commandok read-only, bárki futtathatja
     local lines = RRCSHealth.BuildReport('full')
     printLines(src, lines)
 end, false)
 
 RegisterCommand((Config.Healthcheck and Config.Healthcheck.selfTestCommand) or (Config.Admin and Config.Admin.selfTestCommand) or 'rrcs_selftest', function(src)
-    if not hasAdmin(src) then
-        TriggerClientEvent('realrpg_clothingstudio:client:notify', src, 'Nincs jogosultságod ehhez a parancshoz.', 'error')
-        return
-    end
     local lines, summary = RRCSHealth.BuildReport('selftest')
     if summary.fail > 0 then
         lines[#lines + 1] = 'SELFTEST_RESULT: FAIL'
