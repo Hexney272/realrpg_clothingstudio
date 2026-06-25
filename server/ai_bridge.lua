@@ -180,11 +180,18 @@ function AIBridge.Generate(src, payload)
     local body = buildPayload(prompt, negativePrompt)
 
     notify(src, 'AI design generálása folyamatban...', 'info')
+    print(('[^3RealRPG AI^0] Player %d generating: "%s" | Model: %s'):format(src, prompt:sub(1, 60), Config.AI.model or '?'))
+    print(('[^3RealRPG AI^0] Endpoint: %s'):format(endpoint:gsub(apiKey, 'KEY_HIDDEN')))
 
     PerformHttpRequest(endpoint, function(status, response)
+        print(('[^3RealRPG AI^0] Response status: %s | Body length: %s'):format(tostring(status), response and #response or 0))
+
         if status < 200 or status >= 300 then
             local err = ('http_%s'):format(status)
-            notify(src, ('AI generálás sikertelen: %s'):format(err), 'error')
+            notify(src, ('AI generálás sikertelen: HTTP %s'):format(status), 'error')
+            if Config.Debug and response then
+                print(('[^1RealRPG AI^0] Error response: %s'):format(tostring(response):sub(1, 500)))
+            end
             saveHistory(src, prompt, negativePrompt, nil, err)
             TriggerClientEvent('realrpg_clothingstudio:client:aiResult', src, { ok = false, error = err })
             return

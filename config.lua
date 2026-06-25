@@ -74,7 +74,7 @@ Config.AI = {
     enabled = false,
     provider = 'gemini',
     apiKey = '',
-    model = 'gemini-2.0-flash-preview-image-generation',
+    model = 'gemini-2.0-flash-exp-image-generation',
     endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s',
     cooldownSeconds = 60,
     maxPromptLength = 420,

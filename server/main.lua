@@ -559,8 +559,10 @@ end)
 
 RegisterNetEvent('realrpg_clothingstudio:server:generateAI', function(payload)
     local src = source
+    print(('[^3RealRPG AI^0] Generate request from player %d | prompt: %s'):format(src, payload and payload.prompt and payload.prompt:sub(1, 40) or 'nil'))
     if not AIBridge or not AIBridge.Generate then
         notify(src, 'AI bridge nem töltődött be.', 'error')
+        TriggerClientEvent('realrpg_clothingstudio:client:aiResult', src, { ok = false, error = 'bridge_not_loaded' })
         return
     end
 
