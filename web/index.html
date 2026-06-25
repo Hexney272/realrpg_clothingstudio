@@ -9,120 +9,120 @@
 <body>
   <div id="app" class="hidden">
     <header class="topbar">
-      <div class="brand"><span class="logo">83' RSCD</span><small>Clothing Studio</small></div>
+      <div class="brand"><span class="logo">RealRPG</span><small>Clothing Studio</small></div>
       <div class="tools">
-        <button id="newBtn">NEW</button>
-        <button class="tabAction active" data-mode="select">SELECT</button>
-        <button class="tabAction" data-mode="brush">BRUSH</button>
-        <button id="textBtn">TEXT</button>
-        <button id="shapeBtn">SHAPES</button>
-        <button id="imageBtn">IMAGE</button>
-        <button id="saveBtn">SAVE</button>
-        <button id="undoBtn">UNDO</button>
-        <button id="redoBtn">REDO</button>
+        <button id="newBtn">ÚJ</button>
+        <button class="tabAction active" data-mode="select">KIJELÖLÉS</button>
+        <button class="tabAction" data-mode="brush">ECSET</button>
+        <button id="textBtn">SZÖVEG</button>
+        <button id="shapeBtn">ALAKZAT</button>
+        <button id="imageBtn">KÉP</button>
+        <button id="saveBtn">MENTÉS</button>
+        <button id="undoBtn">VISSZA</button>
+        <button id="redoBtn">ELŐRE</button>
         <button id="aiBtn">AI</button>
       </div>
-      <button id="closeBtn" class="close">×</button>
+      <button id="closeBtn" class="close">&times;</button>
     </header>
 
     <main class="layout">
       <aside class="library panel">
         <div class="tabs">
-          <button class="tab active" data-tab="library">LIBRARY</button>
-          <button class="tab" data-tab="my">MY DESIGNS</button>
-          <button class="tab" data-tab="marketplace">MARKET</button>
+          <button class="tab active" data-tab="library">SABLONOK</button>
+          <button class="tab" data-tab="my">DESIGNJAIM</button>
+          <button class="tab" data-tab="marketplace">PIAC</button>
         </div>
 
-        <input id="search" placeholder="Search silhouettes..." />
+        <input id="search" placeholder="Keresés..." />
 
         <div id="libraryFilters">
           <div class="categories">
-            <button class="cat active" data-cat="tops">TOPS</button>
-            <button class="cat" data-cat="undershirt">UNDER</button>
-            <button class="cat" data-cat="pants">PANTS</button>
-            <button class="cat" data-cat="shoes">SHOES</button>
+            <button class="cat active" data-cat="tops">FELSŐ</button>
+            <button class="cat" data-cat="undershirt">ALSÓING</button>
+            <button class="cat" data-cat="pants">NADRÁG</button>
+            <button class="cat" data-cat="shoes">CIPŐ</button>
           </div>
           <div class="gender">
-            <button class="genderBtn active" data-gender="male">MALE</button>
-            <button class="genderBtn" data-gender="female">FEMALE</button>
+            <button class="genderBtn active" data-gender="male">FÉRFI</button>
+            <button class="genderBtn" data-gender="female">NŐI</button>
           </div>
         </div>
 
-        <h4 id="leftTitle">SILHOUETTES <span id="count"></span></h4>
+        <h4 id="leftTitle">SABLONOK <span id="count"></span></h4>
         <div id="templateGrid" class="gridlist"></div>
 
         <section class="details">
-          <h4>DETAILS</h4>
-          <p id="details">No model selected<br/>Choose from the library</p>
-          <button id="useTemplate">USE THIS TEMPLATE</button>
-          <button id="loadDesignBtn" class="secondary hidden">LOAD SELECTED DESIGN</button>
-          <button id="publishDesignBtn" class="secondary hidden">PUBLISH DESIGN</button>
-          <button id="unpublishDesignBtn" class="secondary hidden">UNPUBLISH</button>
-          <button id="buyMarketBtn" class="secondary hidden">BUY + PRINT</button>
+          <h4>RÉSZLETEK</h4>
+          <p id="details">Nincs kiválasztva sablon<br/>Válassz a könyvtárból</p>
+          <button id="useTemplate">SABLON HASZNÁLATA</button>
+          <button id="loadDesignBtn" class="secondary hidden">DESIGN BETÖLTÉSE</button>
+          <button id="publishDesignBtn" class="secondary hidden">PUBLIKÁLÁS</button>
+          <button id="unpublishDesignBtn" class="secondary hidden">LEVÉTEL</button>
+          <button id="buyMarketBtn" class="secondary hidden">MEGVÉTEL + NYOMTATÁS</button>
         </section>
       </aside>
 
       <section class="preview panel">
-        <h3><span></span> LIVE PREVIEW</h3>
+        <h3><span></span> ÉLŐ ELŐNÉZET</h3>
         <div class="dummy3d">
           <div id="shirt3d"><div id="shirtDesign"></div></div>
         </div>
       </section>
 
       <section class="editor panel">
-        <h3>⌁ UV EDITOR <small id="activeTemplate">empty - 1024x1024</small></h3>
+        <h3>UV SZERKESZTŐ <small id="activeTemplate">üres - 1024x1024</small></h3>
         <div class="canvasWrap"><canvas id="uvCanvas" width="1024" height="1024"></canvas></div>
         <div class="editorBottom">
           <div class="quick">
-            <button id="gridBtn" class="active">GRID</button>
-            <button id="mirrorBtn">MIRROR X</button>
-            <button id="lockBtn">LOCK UV</button>
+            <button id="gridBtn" class="active">RÁCS</button>
+            <button id="mirrorBtn">TÜKRÖZÉS</button>
+            <button id="lockBtn">UV ZÁROLÁS</button>
           </div>
           <div class="brushLine">
-            <label>Color <input id="brushColor" type="color" value="#d7ff00"></label>
-            <label>Size <input id="brushSize" type="range" min="2" max="60" value="12"></label>
+            <label>Szín <input id="brushColor" type="color" value="#d4a853"></label>
+            <label>Méret <input id="brushSize" type="range" min="2" max="60" value="12"></label>
           </div>
           <div class="aiLine">
             <b>AI DESIGN</b>
-            <input id="aiPrompt" placeholder='Describe your design... e.g. "dragon breathing fire on black"'/>
-            <button id="generateAi">GENERATE</button>
+            <input id="aiPrompt" placeholder="Írd le a designt... pl. &quot;sárkány tüzet fúj fekete háttéren&quot;"/>
+            <button id="generateAi">GENERÁLÁS</button>
           </div>
         </div>
       </section>
 
       <aside class="layers panel">
-        <h3>LAYERS <span id="layerCount">0</span><button id="pasteBtn">Paste</button></h3>
-        <div id="layersList" class="layersList"><p class="muted">No layers yet</p></div>
+        <h3>RÉTEGEK <span id="layerCount">0</span><button id="pasteBtn">Beillesztés</button></h3>
+        <div id="layersList" class="layersList"><p class="muted">Még nincsenek rétegek</p></div>
         <section class="props">
-          <h4>LAYER PROPERTIES</h4>
+          <h4>RÉTEG TULAJDONSÁGAI</h4>
           <label>X <input id="propX" type="number" value="0"></label>
           <label>Y <input id="propY" type="number" value="0"></label>
-          <label>Rotation <input id="propRot" type="number" value="0"></label>
-          <label>Opacity <input id="propOpacity" type="range" min="0" max="1" step="0.01" value="1"></label>
-          <label>Blend
+          <label>Forgatás <input id="propRot" type="number" value="0"></label>
+          <label>Átlátszóság <input id="propOpacity" type="range" min="0" max="1" step="0.01" value="1"></label>
+          <label>Keverés
             <select id="propBlend">
-              <option>source-over</option>
-              <option>overlay</option>
-              <option>multiply</option>
-              <option>screen</option>
+              <option value="source-over">Normál</option>
+              <option value="overlay">Átfedés</option>
+              <option value="multiply">Szorzás</option>
+              <option value="screen">Képernyő</option>
             </select>
           </label>
-          <label>Text <input id="propText" type="text" value=""></label>
-          <label>Color <input id="propColor" type="color" value="#d7ff00"></label>
+          <label>Szöveg <input id="propText" type="text" value=""></label>
+          <label>Szín <input id="propColor" type="color" value="#d4a853"></label>
         </section>
       </aside>
     </main>
 
     <footer class="bottombar">
       <div class="barcode">Los Santos Customs ▌▌▌▌▌▌</div>
-      <button id="buildBtn" class="big orange">BUILD IT</button>
-      <button id="printBtn" class="big orange2">PRINT IT</button>
-      <button id="repBtn" class="big">REP IT</button>
+      <button id="buildBtn" class="big orange">ÉPÍTÉS</button>
+      <button id="printBtn" class="big orange2">NYOMTATÁS</button>
+      <button id="repBtn" class="big">HÍRNÉV</button>
       <div class="activeDesign">
-        <small>ACTIVE DESIGN</small>
-        <b id="designName">Untitled Design</b>
+        <small>AKTÍV DESIGN</small>
+        <b id="designName">Névtelen Design</b>
       </div>
-      <button id="readyBtn" class="ready">READY TO PRINT</button>
+      <button id="readyBtn" class="ready">KÉSZ A NYOMTATÁSRA</button>
     </footer>
 
     <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />

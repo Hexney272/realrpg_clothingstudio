@@ -102,7 +102,7 @@ function resetCanvasState() {
   state.selectedMarketplaceDesign = null;
   state.history = [];
   state.redo = [];
-  $('designName').textContent = 'Untitled Design';
+  $('designName').textContent = 'Névtelen Design';
 }
 
 function drawGrid() {
@@ -221,10 +221,10 @@ function setActiveTab(tab) {
   $('buyMarketBtn').classList.toggle('hidden', tab !== 'marketplace');
 
   const title = tab === 'library'
-    ? 'SILHOUETTES <span id="count"></span>'
+    ? 'SABLONOK <span id="count"></span>'
     : tab === 'my'
-      ? 'MY DESIGNS <span id="count"></span>'
-      : 'MARKETPLACE <span id="count"></span>';
+      ? 'DESIGNJAIM <span id="count"></span>'
+      : 'PIACTÉR <span id="count"></span>';
   $('leftTitle').innerHTML = title;
 
   if (tab === 'marketplace') {
@@ -240,7 +240,7 @@ function renderSidebar() {
 
   if (state.activeTab === 'library') {
     const list = getTemplatesForCurrentView();
-    $('count').textContent = `${list.length} ITEMS`;
+    $('count').textContent = `${list.length} SABLON`;
 
     list.forEach((t) => {
       const div = document.createElement('div');
@@ -251,7 +251,7 @@ function renderSidebar() {
     });
   } else if (state.activeTab === 'my') {
     const list = getDesignsForCurrentView();
-    $('count').textContent = `${list.length} DESIGNS`;
+    $('count').textContent = `${list.length} DESIGN`;
 
     list.forEach((design) => {
       const div = document.createElement('div');
@@ -266,7 +266,7 @@ function renderSidebar() {
     });
   } else {
     const list = getMarketplaceForCurrentView();
-    $('count').textContent = `${list.length} LISTINGS`;
+    $('count').textContent = `${list.length} HIRDETÉS`;
 
     list.forEach((design) => {
       const div = document.createElement('div');
@@ -327,7 +327,7 @@ function renderLayers() {
   $('layerCount').textContent = state.layers.length;
 
   if (!state.layers.length) {
-    wrap.innerHTML = '<p class="muted">No layers yet</p>';
+    wrap.innerHTML = '<p class="muted">Még nincsenek rétegek</p>';
     return;
   }
 
@@ -390,7 +390,7 @@ function handleLayerAction(id, action) {
   } else if (action === 'dup') {
     const copy = cloneLayers([stripRuntime(layer)])[0];
     copy.id = uid();
-    copy.name = `${layer.name} Copy`;
+    copy.name = `${layer.name} Másolat`;
     copy.x = (copy.x || 0) + 24;
     copy.y = (copy.y || 0) + 24;
     state.layers.push(copy);
@@ -413,7 +413,7 @@ function addImage(src, options = {}) {
     const layer = {
       id: uid(),
       type: 'image',
-      name: options.name || 'Image Layer',
+      name: options.name || 'Kép Réteg',
       x: 512,
       y: 512,
       w: 360,
@@ -456,11 +456,11 @@ function addAiImageLayer(result) {
   if (!result || !result.ok) return;
   const source = result.url || result.dataUrl;
   if (!source) {
-    nui('notify', { message: 'Az AI nem adott vissza használható kép URL-t.', type: 'error' });
+    nui('notify', { message: 'Az AI nem adott vissza használható képet.', type: 'error' });
     return;
   }
 
-  const name = result.prompt ? `AI: ${result.prompt.slice(0, 32)}` : 'AI Design Layer';
+  const name = result.prompt ? `AI: ${result.prompt.slice(0, 32)}` : 'AI Design Réteg';
   addImage(source, {
     name,
     assetUrl: result.url || null
@@ -478,7 +478,7 @@ function setAiBusy(busy) {
   const aiBtn = $('aiBtn');
   if (btn) {
     btn.disabled = busy;
-    btn.textContent = busy ? 'GENERATING...' : 'GENERATE';
+    btn.textContent = busy ? 'GENERÁLÁS...' : 'GENERÁLÁS';
   }
   if (aiBtn) aiBtn.disabled = busy;
 }
@@ -488,7 +488,7 @@ function addText() {
   const layer = {
     id: uid(),
     type: 'text',
-    name: 'Text Layer',
+    name: 'Szöveg Réteg',
     x: 512,
     y: 512,
     text: 'REALRPG',
@@ -510,7 +510,7 @@ function addShape() {
   const layer = {
     id: uid(),
     type: 'shape',
-    name: 'Shape Layer',
+    name: 'Alakzat Réteg',
     x: 512,
     y: 512,
     w: 420,
@@ -532,7 +532,7 @@ function addBrushLayer(point) {
   const layer = {
     id: uid(),
     type: 'brush',
-    name: 'Brush Layer',
+    name: 'Ecset Réteg',
     x: point.x,
     y: point.y,
     points: [point],
@@ -687,7 +687,7 @@ function startLayerAssetUpload(layer) {
       layer.uploadState = 'failed';
       layer.uploadError = error.message || String(error);
       drawUV();
-      nui('notify', { message: `Layer asset upload sikertelen: ${layer.uploadError}`, type: 'error' });
+      nui('notify', { message: `Kép réteg feltöltése sikertelen: ${layer.uploadError}`, type: 'error' });
       if (state.uploadBridge.failLayerUploadIfUploadFails) throw error;
       return null;
     });
@@ -707,7 +707,7 @@ async function ensureLayerAssetsUploaded() {
   }
 
   if (!jobs.length) return;
-  nui('notify', { message: `Image layer assetek feltöltése (${jobs.length})...`, type: 'info' });
+  nui('notify', { message: `Kép rétegek feltöltése (${jobs.length})...`, type: 'info' });
   await Promise.all(jobs);
 }
 
@@ -752,11 +752,11 @@ async function buildSavePayload(label) {
 
   if (state.uploadBridge.enabled && dataUrl) {
     try {
-      nui('notify', { message: 'Végleges design feltöltése CDN/Discord bridge-re...', type: 'info' });
+      nui('notify', { message: 'Design feltöltése CDN-re...', type: 'info' });
       imageUrl = await uploadDataUrlChunked(dataUrl, 'design_final');
       preview = imageUrl || dataUrl;
     } catch (error) {
-      nui('notify', { message: `Final upload sikertelen: ${error.message || error}`, type: 'error' });
+      nui('notify', { message: `Feltöltési hiba: ${error.message || error}`, type: 'error' });
       if (state.uploadBridge.failSaveIfUploadFails) throw error;
     }
   }
@@ -780,15 +780,15 @@ async function buildSavePayload(label) {
 $('closeBtn').onclick = () => { app.classList.add('hidden'); nui('close'); };
 $('newBtn').onclick = () => { resetCanvasState(); drawUV(); };
 $('saveBtn').onclick = async () => {
-  if (!state.selectedTemplate) return nui('notify', { message: 'Válassz sablont.', type: 'error' });
-  const label = prompt('Design neve:', $('designName').textContent || 'Untitled Design') || 'Untitled Design';
+  if (!state.selectedTemplate) return nui('notify', { message: 'Válassz sablont először.', type: 'error' });
+  const label = prompt('Design neve:', $('designName').textContent || 'Névtelen Design') || 'Névtelen Design';
   $('designName').textContent = label;
 
   try {
     const payload = await buildSavePayload(label);
     nui('saveDesign', payload);
   } catch (_) {
-    nui('notify', { message: 'A design mentése megszakadt upload hiba miatt.', type: 'error' });
+    nui('notify', { message: `A design mentése megszakadt feltöltési hiba miatt.`, type: 'error' });
   }
 };
 $('printBtn').onclick = () => {
@@ -805,7 +805,7 @@ $('loadDesignBtn').onclick = () => {
 $('publishDesignBtn').onclick = () => {
   const designId = state.selectedSavedDesign?.design_id || state.currentDesignId;
   if (!designId) return nui('notify', { message: 'Először válassz vagy ments el egy designt.', type: 'error' });
-  const priceRaw = prompt('Marketplace ár:', '5000');
+  const priceRaw = prompt('Piactéri ár:', '5000');
   if (priceRaw === null) return;
   const price = Number(priceRaw);
   if (!Number.isFinite(price) || price <= 0) return nui('notify', { message: 'Érvénytelen ár.', type: 'error' });
@@ -817,19 +817,19 @@ $('unpublishDesignBtn').onclick = () => {
   nui('unpublishDesign', { designId });
 };
 $('buyMarketBtn').onclick = () => {
-  if (!state.selectedMarketplaceDesign) return nui('notify', { message: 'Válassz egy marketplace ruhát.', type: 'error' });
-  const ok = confirm(`Megveszed és kinyomtatod ezt: ${state.selectedMarketplaceDesign.label} ($${state.selectedMarketplaceDesign.price})?`);
+  if (!state.selectedMarketplaceDesign) return nui('notify', { message: 'Válassz egy piactéri ruhát.', type: 'error' });
+  const ok = confirm(`Megveszed és kinyomtatod: ${state.selectedMarketplaceDesign.label} ($${state.selectedMarketplaceDesign.price})?`);
   if (!ok) return;
   nui('buyMarketplaceDesign', { designId: state.selectedMarketplaceDesign.design_id });
 };
 $('imageBtn').onclick = () => $('fileInput').click();
 $('textBtn').onclick = addText;
 $('shapeBtn').onclick = addShape;
-$('buildBtn').onclick = () => nui('notify', { message: 'A Build It rész az editor oldalon történik.', type: 'info' });
-$('repBtn').onclick = () => nui('notify', { message: 'A Rep It funkció későbbi buildben bővíthető.', type: 'info' });
+$('buildBtn').onclick = () => nui('notify', { message: 'Az építés az editor oldalon történik.', type: 'info' });
+$('repBtn').onclick = () => nui('notify', { message: 'A hírnév funkció egy későbbi frissítésben érkezik.', type: 'info' });
 $('pasteBtn').onclick = async () => {
   if (!navigator.clipboard || !navigator.clipboard.read) {
-    nui('notify', { message: 'A clipboard kép beillesztés nem támogatott itt.', type: 'error' });
+    nui('notify', { message: 'A vágólap beillesztés nem támogatott.', type: 'error' });
     return;
   }
   try {
@@ -844,7 +844,7 @@ $('pasteBtn').onclick = async () => {
       return;
     }
   } catch (_) {
-    nui('notify', { message: 'Nem sikerült a clipboard beillesztés.', type: 'error' });
+    nui('notify', { message: 'Nem sikerült a beillesztés.', type: 'error' });
   }
 };
 $('undoBtn').onclick = () => {
@@ -880,7 +880,7 @@ $('generateAi').onclick = () => {
   const prompt = $('aiPrompt').value.trim();
   if (!prompt) return nui('notify', { message: 'Adj meg egy AI promptot.', type: 'error' });
   if (prompt.length > Number(state.ai.maxPromptLength || 420)) {
-    return nui('notify', { message: `Túl hosszú AI prompt. Max: ${state.ai.maxPromptLength} karakter.`, type: 'error' });
+    return nui('notify', { message: `Túl hosszú prompt. Maximum: ${state.ai.maxPromptLength} karakter.`, type: 'error' });
   }
 
   setAiBusy(true);
@@ -889,7 +889,7 @@ $('generateAi').onclick = () => {
 $('aiBtn').onclick = () => $('generateAi').click();
 $('gridBtn').onclick = () => { state.gridEnabled = !state.gridEnabled; $('gridBtn').classList.toggle('active', state.gridEnabled); drawUV(); };
 $('mirrorBtn').onclick = () => { state.mirrorEnabled = !state.mirrorEnabled; $('mirrorBtn').classList.toggle('active', state.mirrorEnabled); drawUV(); };
-$('lockBtn').onclick = () => { $('lockBtn').classList.toggle('active'); nui('notify', { message: 'UV lock vizuális placeholder az MVP-ben.', type: 'info' }); };
+$('lockBtn').onclick = () => { $('lockBtn').classList.toggle('active'); nui('notify', { message: 'UV zárolás vizuális jelző.', type: 'info' }); };
 
 propX.oninput = applyPropChanges;
 propY.oninput = applyPropChanges;
@@ -1046,14 +1046,14 @@ window.addEventListener('message', (e) => {
     setAiBusy(false);
     const result = msg.result || {};
     if (!result.ok) {
-      nui('notify', { message: `AI hiba: ${result.error || 'unknown'}`, type: 'error' });
+      nui('notify', { message: `AI hiba: ${result.error || 'ismeretlen'}`, type: 'error' });
       return;
     }
     addAiImageLayer(result);
     if (result.uploadError) {
-      nui('notify', { message: `AI kép elkészült, de CDN upload hiba: ${result.uploadError}`, type: 'error' });
+      nui('notify', { message: `AI kép elkészült, de CDN feltöltési hiba: ${result.uploadError}`, type: 'error' });
     } else {
-      nui('notify', { message: 'AI design layer hozzáadva.', type: 'success' });
+      nui('notify', { message: 'AI design réteg hozzáadva.', type: 'success' });
     }
   }
 
