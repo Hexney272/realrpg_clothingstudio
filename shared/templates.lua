@@ -5,10 +5,10 @@ Templates = Templates or {}
 Templates.List = {
     male = {
         tops = {
-            { id = 'm_blank_top_000', label = 'Blank Póló #1', component = 11, drawable = 0, texture = 0, runtimeSlot = 1, preview = 'assets/jbib_000_preview.png', uv = 'assets/jbib_000_uv.png' },
-            { id = 'm_blank_top_005', label = 'Blank Póló #2', component = 11, drawable = 5, texture = 0, runtimeSlot = 2, preview = 'assets/jbib_005_preview.png', uv = 'assets/jbib_005_uv.png' },
-            { id = 'm_blank_top_007', label = 'Blank Póló #3', component = 11, drawable = 7, texture = 0, runtimeSlot = 3, preview = 'assets/jbib_007_preview.png', uv = 'assets/jbib_007_uv.png' },
-            { id = 'm_blank_top_013', label = 'Blank Póló #4', component = 11, drawable = 13, texture = 0, runtimeSlot = 4, preview = 'assets/jbib_013_preview.png', uv = 'assets/jbib_013_uv.png' }
+            { id = 'm_blank_top_000', label = 'Blank Póló #1', component = 11, drawable = 0, texture = 0, runtimeSlot = 1, preview = 'assets/jbib_diff_000_a_uni.png', uv = 'assets/jbib_diff_000_a_uni.png' },
+            { id = 'm_blank_top_005', label = 'Blank Póló #2', component = 11, drawable = 5, texture = 0, runtimeSlot = 2, preview = 'assets/jbib_diff_005_a_uni.png', uv = 'assets/jbib_diff_005_a_uni.png' },
+            { id = 'm_blank_top_007', label = 'Blank Póló #3', component = 11, drawable = 7, texture = 0, runtimeSlot = 3, preview = 'assets/jbib_diff_007_a_uni.png', uv = 'assets/jbib_diff_007_a_uni.png' },
+            { id = 'm_blank_top_013', label = 'Blank Póló #4', component = 11, drawable = 13, texture = 0, runtimeSlot = 4, preview = 'assets/jbib_diff_013_a_uni.png', uv = 'assets/jbib_diff_013_a_uni.png' }
         },
         undershirt = {},
         pants = {},
