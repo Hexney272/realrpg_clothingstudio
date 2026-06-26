@@ -116,3 +116,27 @@ body{margin:0;background:transparent;font-family:Arial Black,Arial,sans-serif;co
 @media (max-width: 1400px) {
     .layout{grid-template-columns:240px 280px 1fr 280px}
 }
+
+
+/* IN-NUI MODAL DIALOG */
+.modal-overlay{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999}
+.modal-overlay.hidden{display:none}
+.modal-box{background:#101610;border:1px solid var(--accent);border-radius:8px;padding:24px 32px;min-width:340px;box-shadow:0 0 40px rgba(215,255,0,.15)}
+.modal-box h4{margin:0 0 14px;color:var(--accent);font-size:13px;text-transform:uppercase}
+.modal-box input{width:100%;background:#060806;border:1px solid #1f271b;padding:12px;color:white;font-size:14px;border-radius:4px;outline:none}
+.modal-box input:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.modal-actions button{padding:10px 20px;font-size:11px;font-weight:900;cursor:pointer;border:1px solid var(--border);border-radius:4px;transition:all .15s}
+#modalCancel{background:#1a1a1a;color:#aaa}
+#modalCancel:hover{background:#2a2a2a;color:#fff}
+#modalConfirm{background:var(--accent);color:#111;border-color:var(--accent)}
+#modalConfirm:hover{box-shadow:0 0 12px rgba(215,255,0,.4)}
+
+
+/* BRUSH SETTINGS */
+.brush-settings{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brush-settings.hidden{display:none}
+.brush-settings label{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);font-family:Arial,sans-serif}
+.brush-settings input[type="range"]{width:80px;height:4px;-webkit-appearance:none;background:#1c2319;border:none;border-radius:2px}
+.brush-settings input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--accent);border-radius:50%;cursor:pointer}
+.brush-settings input[type="color"]{width:28px;height:28px;border:1px solid var(--border);background:none;cursor:pointer;border-radius:3px;padding:0}

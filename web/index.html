@@ -63,6 +63,10 @@
         <div class="canvasWrap"><canvas id="uvCanvas" width="1024" height="1024"></canvas></div>
         <div class="editorBottom">
           <div class="quick"><button id="gridBtn">GRID</button><button id="mirrorBtn">MIRROR X</button><button id="lockBtn">LOCK UV</button></div>
+          <div class="brush-settings hidden" id="brushSettings">
+            <label>Size <input id="brushSize" type="range" min="2" max="60" value="12"></label>
+            <label>Color <input id="brushColor" type="color" value="#111111"></label>
+          </div>
           <div class="aiLine"><b>AI DESIGN</b><input id="aiPrompt" placeholder='Describe your design... e.g. "dragon breathing fire on black"'/><button id="generateAi">GENERATE</button></div>
         </div>
       </section>
@@ -90,6 +94,18 @@
     </footer>
 
     <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+
+    <!-- In-NUI Modal Dialog (replaces browser prompt()) -->
+    <div id="modalOverlay" class="modal-overlay hidden">
+      <div class="modal-box">
+        <h4 id="modalTitle">Input</h4>
+        <input id="modalInput" type="text" autocomplete="off" />
+        <div class="modal-actions">
+          <button id="modalCancel">CANCEL</button>
+          <button id="modalConfirm">OK</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="app.js"></script>
 </body>

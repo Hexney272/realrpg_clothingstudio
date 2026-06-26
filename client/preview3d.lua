@@ -5,34 +5,31 @@
     amely a NUI mögött látszik (transparent background).
     Így a ped-en lévő ruha (a stream mappából streamelt YDD) 
     valódi 3D-ben jelenik meg élő preview-ként.
-    
-    Funkciók:
-    - Kamera pozícionálás a ped-re
-    - Forgatás (bal/jobb nyilakkal vagy NUI gombokkal)
-    - Zoom in/out
-    - Különböző nézetek (full body, felső test, alsó test, láb)
 ]]
 
 local previewCam = nil
 local previewActive = false
-local camRotation = 0.0     -- Y tengely forgás (körbe)
-local camZoom = 1.0         -- 1.0 = alaphelyzet
-local camHeight = 0.0       -- Vertikális offset (nézet típus alapján)
-local camDistance = 1.6     -- Kamera távolság
-local camFov = 35.0         -- Field of View (szűk = kevésbé torzít)
+local camRotation = 180.0   -- Elölről nézzük a pedet (szemben áll velünk)
+local camZoom = 1.0
+local camDistance = 1.8
+local camFov = 32.0
+local camHeightOffset = 0.0 -- Extra height offset from view preset
 
--- Nézet presetjei
+-- A ped mellkasának magassága (a ped z koordinátája a talp)
+local PED_CENTER_HEIGHT = 0.5  -- ~mellkas magasság
+
+-- Nézet presetjei (height = a nézet célpontja a pedhez képest)
 local VIEW_PRESETS = {
-    full     = { height = 0.0,   distance = 1.8, fov = 35.0 },
-    upper    = { height = 0.25,  distance = 1.0, fov = 30.0 },
-    lower    = { height = -0.35, distance = 1.2, fov = 30.0 },
-    feet     = { height = -0.7,  distance = 0.8, fov = 28.0 },
-    head     = { height = 0.55,  distance = 0.7, fov = 28.0 },
+    full     = { targetHeight = 0.4,  distance = 1.8, fov = 32.0 },
+    upper    = { targetHeight = 0.6,  distance = 1.2, fov = 28.0 },
+    lower    = { targetHeight = -0.1, distance = 1.3, fov = 28.0 },
+    feet     = { targetHeight = -0.4, distance = 0.9, fov = 25.0 },
+    head     = { targetHeight = 0.75, distance = 0.8, fov = 25.0 },
 }
 
 local currentView = 'full'
-local smoothRotationTarget = 0.0
 local autoRotate = false
+local pedHeadingOnOpen = 0.0
 
 -- ═══════════════════════════════════════════════════════════════
 -- CAMERA CREATION / DESTRUCTION
@@ -42,19 +39,27 @@ local function createPreviewCamera()
     if previewCam then return end
 
     local ped = PlayerPedId()
-    local pedCoords = GetEntityCoords(ped)
 
-    previewCam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
-    SetCamFov(previewCam, camFov)
-    SetCamActive(previewCam, true)
-    RenderScriptCams(true, true, 500, true, false)
+    -- Mentjük a ped irányát és szembefordítjuk a kamerával
+    pedHeadingOnOpen = GetEntityHeading(ped)
 
-    -- Ped-et állítsuk meg, ne mozogjon
+    -- Ped-et megállítjuk
     FreezeEntityPosition(ped, true)
     TaskStandStill(ped, -1)
 
-    -- Irányítsuk a ped-et a kamerával szembe
-    SetEntityHeading(ped, GetEntityHeading(ped))
+    -- Kamera létrehozás
+    previewCam = CreateCam('DEFAULT_SCRIPTED_CAMERA', true)
+    SetCamActive(previewCam, true)
+    RenderScriptCams(true, true, 800, true, false)
+
+    -- Alapértelmezett nézet beállítás
+    camRotation = 180.0
+    camZoom = 1.0
+    camHeightOffset = VIEW_PRESETS.full.targetHeight
+    camDistance = VIEW_PRESETS.full.distance
+    camFov = VIEW_PRESETS.full.fov
+    currentView = 'full'
+    autoRotate = false
 
     previewActive = true
     updateCameraPosition()
@@ -63,14 +68,17 @@ end
 local function destroyPreviewCamera()
     if not previewCam then return end
 
-    RenderScriptCams(false, true, 500, true, false)
+    RenderScriptCams(false, true, 800, true, false)
+    SetCamActive(previewCam, false)
     DestroyCam(previewCam, false)
     previewCam = nil
     previewActive = false
+    autoRotate = false
 
     -- Ped feloldása
-    FreezeEntityPosition(PlayerPedId(), false)
-    ClearPedTasks(PlayerPedId())
+    local ped = PlayerPedId()
+    FreezeEntityPosition(ped, false)
+    ClearPedTasks(ped)
 end
 
 -- ═══════════════════════════════════════════════════════════════
@@ -82,22 +90,26 @@ function updateCameraPosition()
 
     local ped = PlayerPedId()
     local pedCoords = GetEntityCoords(ped)
-    local pedHeading = GetEntityHeading(ped)
+    local heading = GetEntityHeading(ped)
 
-    -- Kamera pozíció kiszámítása (kör mentén a ped körül)
-    local angleRad = math.rad(camRotation + pedHeading)
+    -- A kamera a ped körül kering
+    -- camRotation = 180 = a ped előtt (szemből látjuk)
+    local angleRad = math.rad(heading + camRotation)
     local dist = camDistance * camZoom
 
-    local camX = pedCoords.x + (math.sin(angleRad) * dist)
+    local camX = pedCoords.x - (math.sin(angleRad) * dist)
     local camY = pedCoords.y + (math.cos(angleRad) * dist)
-    local camZ = pedCoords.z + camHeight
+    -- Kamera magasság: ped talp + offset (a preset alapján)
+    local camZ = pedCoords.z + camHeightOffset
 
     SetCamCoord(previewCam, camX, camY, camZ)
 
-    -- Kamera irány: a ped felé néz (a megfelelő magassággal)
-    local lookAtZ = pedCoords.z + camHeight
-    PointCamAtCoord(previewCam, pedCoords.x, pedCoords.y, lookAtZ)
+    -- Kamera célpont: a ped mellkasa/célpontja
+    local lookAtX = pedCoords.x
+    local lookAtY = pedCoords.y
+    local lookAtZ = pedCoords.z + camHeightOffset
 
+    PointCamAtCoord(previewCam, lookAtX, lookAtY, lookAtZ)
     SetCamFov(previewCam, camFov)
 end
 
@@ -110,7 +122,7 @@ local function setView(viewName)
     if not preset then return end
 
     currentView = viewName
-    camHeight = preset.height
+    camHeightOffset = preset.targetHeight
     camDistance = preset.distance
     camFov = preset.fov
     updateCameraPosition()
@@ -133,17 +145,17 @@ local function rotateRight(amount)
 end
 
 local function zoomIn()
-    camZoom = math.max(0.4, camZoom - 0.15)
+    camZoom = math.max(0.5, camZoom - 0.1)
     updateCameraPosition()
 end
 
 local function zoomOut()
-    camZoom = math.min(2.5, camZoom + 0.15)
+    camZoom = math.min(2.0, camZoom + 0.1)
     updateCameraPosition()
 end
 
 local function resetCamera()
-    camRotation = 0.0
+    camRotation = 180.0
     camZoom = 1.0
     autoRotate = false
     setView('full')
@@ -207,17 +219,8 @@ RegisterNetEvent('realrpg_clothingstudio:client:closeStudio3D', function()
     destroyPreviewCamera()
 end)
 
--- Hook into the existing studio open/close events
-AddEventHandler('realrpg_clothingstudio:client:openStudio', function()
-    -- Kis késleltetés, hogy a NUI felépüljön
-    CreateThread(function()
-        Wait(300)
-        createPreviewCamera()
-    end)
-end)
-
 -- ═══════════════════════════════════════════════════════════════
--- MAIN THREAD: Auto-rotation + smooth camera + controls
+-- MAIN THREAD: Auto-rotation + controls
 -- ═══════════════════════════════════════════════════════════════
 
 CreateThread(function()
@@ -227,30 +230,16 @@ CreateThread(function()
 
             -- Auto-rotation
             if autoRotate then
-                camRotation = camRotation + 0.3
+                camRotation = camRotation + 0.25
                 if camRotation >= 360 then camRotation = camRotation - 360 end
                 updateCameraPosition()
             end
 
-            -- Keyboard controls (ha a NUI nincs fókuszban)
-            -- LEFT ARROW
-            if IsControlPressed(0, 174) then
-                rotateLeft(1.5)
-            end
-            -- RIGHT ARROW
-            if IsControlPressed(0, 175) then
-                rotateRight(1.5)
-            end
-            -- SCROLL UP (zoom in)
-            if IsDisabledControlPressed(0, 241) then
-                zoomIn()
-            end
-            -- SCROLL DOWN (zoom out)
-            if IsDisabledControlPressed(0, 242) then
-                zoomOut()
-            end
-
             -- Disable player movement while preview is active
+            DisableControlAction(0, 1, true)   -- LookLeftRight
+            DisableControlAction(0, 2, true)   -- LookUpDown
+            DisableControlAction(0, 24, true)  -- Attack
+            DisableControlAction(0, 25, true)  -- Aim
             DisableControlAction(0, 30, true)  -- MoveLeftRight
             DisableControlAction(0, 31, true)  -- MoveUpDown
             DisableControlAction(0, 36, true)  -- InputDuck
@@ -258,6 +247,7 @@ CreateThread(function()
             DisableControlAction(0, 22, true)  -- Jump
             DisableControlAction(0, 44, true)  -- Cover
             DisableControlAction(0, 37, true)  -- SelectWeapon
+            DisableControlAction(0, 44, true)  -- Cover
         else
             Wait(500)
         end

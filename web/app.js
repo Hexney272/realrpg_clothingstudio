@@ -25,6 +25,10 @@ let state = {
     marketplaceEnabled: false,
     // Pack export selection
     selectedForExport: new Set(),
+    // Editor mode: 'select' | 'brush' | 'text'
+    mode: 'select',
+    // Brush settings
+    brush: { size: 12, color: '#111111', drawing: false },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -41,6 +45,38 @@ function nui(name, data = {}) {
 }
 
 function uid() { return 'l_' + Math.random().toString(36).slice(2) + Date.now(); }
+
+// ═══════════════════════════════════════════════════════════════
+// IN-NUI MODAL (replaces prompt() which opens external window)
+// ═══════════════════════════════════════════════════════════════
+
+function nuiPrompt(title, defaultValue = '') {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('modalOverlay');
+        const input = document.getElementById('modalInput');
+        const confirmBtn = document.getElementById('modalConfirm');
+        const cancelBtn = document.getElementById('modalCancel');
+        document.getElementById('modalTitle').textContent = title;
+        input.value = defaultValue;
+        overlay.classList.remove('hidden');
+        input.focus();
+        input.select();
+
+        function cleanup() {
+            overlay.classList.add('hidden');
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+            input.onkeydown = null;
+        }
+
+        confirmBtn.onclick = () => { cleanup(); resolve(input.value || defaultValue); };
+        cancelBtn.onclick = () => { cleanup(); resolve(null); };
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') { cleanup(); resolve(input.value || defaultValue); }
+            if (e.key === 'Escape') { cleanup(); resolve(null); }
+        };
+    });
+}
 
 function pushHistory() {
     state.history.push(JSON.stringify(state.layers));
@@ -227,8 +263,9 @@ function renderLayers() {
     [...state.layers].reverse().forEach(l => {
         const div = document.createElement('div');
         div.className = 'layer' + (state.selectedLayer === l.id ? ' active' : '');
+        const thumbUrl = getLayerThumbnail(l);
         div.innerHTML = `
-            <div class="thumb" style="background-image:url(${l.src || ''})"></div>
+            <div class="thumb" style="background-image:url(${thumbUrl})"></div>
             <b>${l.name || l.type}</b>
             <span class="layer-actions">
                 <button class="layer-vis" data-id="${l.id}">${l.visible ? '&#128065;' : '&mdash;'}</button>
@@ -254,6 +291,51 @@ function renderLayers() {
         };
         wrap.appendChild(div);
     });
+}
+
+// Generate a small thumbnail for any layer type
+function getLayerThumbnail(l) {
+    // Image layers already have a src
+    if (l.type === 'image' && l.src) return l.src;
+
+    // Generate thumbnail for text/shape layers using a tiny offscreen canvas
+    const size = 56;
+    const tc = document.createElement('canvas');
+    tc.width = size;
+    tc.height = size;
+    const tctx = tc.getContext('2d');
+
+    if (l.type === 'text') {
+        tctx.fillStyle = '#1a1a1a';
+        tctx.fillRect(0, 0, size, size);
+        tctx.fillStyle = l.color || '#fff';
+        tctx.font = 'bold 14px Arial Black';
+        tctx.textAlign = 'center';
+        tctx.textBaseline = 'middle';
+        tctx.fillText((l.text || 'T').substring(0, 4), size / 2, size / 2);
+    } else if (l.type === 'shape') {
+        tctx.fillStyle = '#1a1a1a';
+        tctx.fillRect(0, 0, size, size);
+        tctx.fillStyle = l.color || '#d7ff00';
+        if (l.shape === 'circle') {
+            tctx.beginPath();
+            tctx.ellipse(size / 2, size / 2, size / 3, size / 3, 0, 0, Math.PI * 2);
+            tctx.fill();
+        } else {
+            tctx.fillRect(size * 0.15, size * 0.2, size * 0.7, size * 0.6);
+        }
+    } else {
+        // Fallback
+        tctx.fillStyle = '#222';
+        tctx.fillRect(0, 0, size, size);
+        tctx.fillStyle = '#666';
+        tctx.font = '10px Arial';
+        tctx.textAlign = 'center';
+        tctx.textBaseline = 'middle';
+        tctx.fillText(l.type, size / 2, size / 2);
+    }
+
+    return tc.toDataURL('image/png');
 }
 
 function fillProps(l) {
@@ -289,16 +371,18 @@ function addImage(src) {
 }
 
 function addText() {
-    const text = prompt('Szöveg:', 'REALRPG') || 'REALRPG';
-    pushHistory();
-    const l = {
-        id: uid(), type: 'text', name: 'Text: ' + text.substring(0, 12),
-        x: 512, y: 512, text, size: 72, color: '#111',
-        rotation: 0, opacity: 1, blend: 'source-over', visible: true
-    };
-    state.layers.push(l);
-    state.selectedLayer = l.id;
-    drawUV();
+    nuiPrompt('Szöveg:', 'REALRPG').then(text => {
+        if (!text) return;
+        pushHistory();
+        const l = {
+            id: uid(), type: 'text', name: 'Text: ' + text.substring(0, 12),
+            x: 512, y: 512, text, size: 72, color: '#111',
+            rotation: 0, opacity: 1, blend: 'source-over', visible: true
+        };
+        state.layers.push(l);
+        state.selectedLayer = l.id;
+        drawUV();
+    });
 }
 
 function addShape() {
@@ -371,10 +455,12 @@ function exportPack() {
         alert('Jelölj ki legalább egy designt az exporthoz!');
         return;
     }
-    const name = prompt('Pack neve:', 'My Clothing Pack') || 'My Clothing Pack';
-    nui('exportPack', {
-        name,
-        designIds: Array.from(state.selectedForExport)
+    nuiPrompt('Pack neve:', 'My Clothing Pack').then(name => {
+        if (!name) return;
+        nui('exportPack', {
+            name,
+            designIds: Array.from(state.selectedForExport)
+        });
     });
 }
 
@@ -413,22 +499,40 @@ document.getElementById('fileInput').onchange = e => {
     e.target.value = '';
 };
 
-// Text & Shape
-document.querySelector('[data-mode="text"]').onclick = addText;
+// Mode buttons (SELECT / BRUSH / TEXT)
+document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.onclick = () => {
+        const mode = btn.dataset.mode;
+        document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.mode = mode;
+        canvas.style.cursor = mode === 'brush' ? 'crosshair' : (mode === 'select' ? 'default' : 'text');
+        // Show/hide brush settings
+        const brushUI = document.getElementById('brushSettings');
+        if (brushUI) brushUI.classList.toggle('hidden', mode !== 'brush');
+        if (mode === 'text') addText();
+    };
+});
 document.getElementById('addShapeBtn').onclick = addShape;
+
+// Brush settings
+document.getElementById('brushSize').oninput = (e) => { state.brush.size = +e.target.value; };
+document.getElementById('brushColor').oninput = (e) => { state.brush.color = e.target.value; };
 
 // Save
 document.getElementById('saveBtn').onclick = () => {
     if (!state.selectedTemplate) { alert('Válassz sablont!'); return; }
-    const label = prompt('Design neve:', document.getElementById('designName').textContent || 'Untitled Design') || 'Untitled Design';
-    document.getElementById('designName').textContent = label;
-    nui('saveDesign', {
-        label,
-        gender: state.gender,
-        category: state.category,
-        templateId: state.selectedTemplate.id,
-        design: { layers: state.layers.map(l => ({ ...l, img: undefined })) },
-        preview: canvas.toDataURL('image/png')
+    nuiPrompt('Design neve:', document.getElementById('designName').textContent || 'Untitled Design').then(label => {
+        if (!label) return;
+        document.getElementById('designName').textContent = label;
+        nui('saveDesign', {
+            label,
+            gender: state.gender,
+            category: state.category,
+            templateId: state.selectedTemplate.id,
+            design: { layers: state.layers.map(l => ({ ...l, img: undefined })) },
+            preview: canvas.toDataURL('image/png')
+        });
     });
 };
 
@@ -597,11 +701,69 @@ document.addEventListener('keydown', e => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// DRAG & DROP on canvas
+// DRAG & DROP on canvas + BRUSH drawing
 // ═══════════════════════════════════════════════════════════════
 
 let dragging = null;
 let dragOffset = { x: 0, y: 0 };
+
+// Brush stroke storage (temporary offscreen canvas per stroke)
+let brushCanvas = null;
+let brushCtx = null;
+let lastBrushPos = null;
+
+function initBrushCanvas() {
+    if (!brushCanvas) {
+        brushCanvas = document.createElement('canvas');
+        brushCanvas.width = 1024;
+        brushCanvas.height = 1024;
+        brushCtx = brushCanvas.getContext('2d');
+    }
+    brushCtx.clearRect(0, 0, 1024, 1024);
+}
+
+function brushStroke(x, y, isStart) {
+    if (!brushCtx) return;
+    brushCtx.strokeStyle = state.brush.color;
+    brushCtx.lineWidth = state.brush.size;
+    brushCtx.lineCap = 'round';
+    brushCtx.lineJoin = 'round';
+
+    if (isStart) {
+        brushCtx.beginPath();
+        brushCtx.moveTo(x, y);
+        // Draw a dot for single click
+        brushCtx.lineTo(x + 0.1, y + 0.1);
+        brushCtx.stroke();
+    } else {
+        brushCtx.beginPath();
+        brushCtx.moveTo(lastBrushPos.x, lastBrushPos.y);
+        brushCtx.lineTo(x, y);
+        brushCtx.stroke();
+    }
+    lastBrushPos = { x, y };
+}
+
+function finalizeBrushStroke() {
+    if (!brushCanvas) return;
+    const dataUrl = brushCanvas.toDataURL('image/png');
+    const img = new Image();
+    img.onload = () => {
+        pushHistory();
+        const l = {
+            id: uid(), type: 'image', name: 'Brush Stroke',
+            x: 512, y: 512, w: 1024, h: 1024,
+            rotation: 0, opacity: 1, blend: 'source-over', visible: true,
+            src: dataUrl, img
+        };
+        state.layers.push(l);
+        state.selectedLayer = l.id;
+        drawUV();
+    };
+    img.src = dataUrl;
+    brushCtx.clearRect(0, 0, 1024, 1024);
+    lastBrushPos = null;
+}
 
 canvas.addEventListener('mousedown', e => {
     const rect = canvas.getBoundingClientRect();
@@ -609,7 +771,15 @@ canvas.addEventListener('mousedown', e => {
     const mx = (e.clientX - rect.left) * scale;
     const my = (e.clientY - rect.top) * scale;
 
-    // Find clicked layer (top-most first)
+    // BRUSH MODE
+    if (state.mode === 'brush') {
+        state.brush.drawing = true;
+        initBrushCanvas();
+        brushStroke(mx, my, true);
+        return;
+    }
+
+    // SELECT MODE - Find clicked layer (top-most first)
     for (let i = state.layers.length - 1; i >= 0; i--) {
         const l = state.layers[i];
         if (!l.visible) continue;
@@ -629,17 +799,44 @@ canvas.addEventListener('mousedown', e => {
 });
 
 canvas.addEventListener('mousemove', e => {
-    if (!dragging) return;
     const rect = canvas.getBoundingClientRect();
     const scale = 1024 / rect.width;
+    const mx = (e.clientX - rect.left) * scale;
+    const my = (e.clientY - rect.top) * scale;
+
+    // BRUSH MODE drawing
+    if (state.mode === 'brush' && state.brush.drawing) {
+        brushStroke(mx, my, false);
+        // Live preview: draw current brush stroke on main canvas
+        ctx.drawImage(brushCanvas, 0, 0);
+        return;
+    }
+
+    // SELECT MODE dragging
+    if (!dragging) return;
     dragging.x = Math.round((e.clientX - rect.left) * scale - dragOffset.x);
     dragging.y = Math.round((e.clientY - rect.top) * scale - dragOffset.y);
     fillProps(dragging);
     drawUV();
 });
 
-canvas.addEventListener('mouseup', () => { dragging = null; });
-canvas.addEventListener('mouseleave', () => { dragging = null; });
+canvas.addEventListener('mouseup', () => {
+    if (state.mode === 'brush' && state.brush.drawing) {
+        state.brush.drawing = false;
+        finalizeBrushStroke();
+        return;
+    }
+    dragging = null;
+});
+
+canvas.addEventListener('mouseleave', () => {
+    if (state.mode === 'brush' && state.brush.drawing) {
+        state.brush.drawing = false;
+        finalizeBrushStroke();
+        return;
+    }
+    dragging = null;
+});
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
