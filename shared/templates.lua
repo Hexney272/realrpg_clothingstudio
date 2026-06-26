@@ -5,23 +5,17 @@ Templates = Templates or {}
 Templates.List = {
     male = {
         tops = {
-            { id = 'm_top_basic_001', label = 'Basic T-Shirt', component = 11, drawable = 15, texture = 0, runtimeSlot = 1, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' },
-            { id = 'm_top_staff_001', label = 'Staff Shirt', component = 11, drawable = 16, texture = 0, runtimeSlot = 2, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' }
+            { id = 'm_blank_top_000', label = 'Blank Póló #1', component = 11, drawable = 0, texture = 0, runtimeSlot = 1, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' },
+            { id = 'm_blank_top_005', label = 'Blank Póló #2', component = 11, drawable = 5, texture = 0, runtimeSlot = 2, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' },
+            { id = 'm_blank_top_007', label = 'Blank Póló #3', component = 11, drawable = 7, texture = 0, runtimeSlot = 3, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' },
+            { id = 'm_blank_top_013', label = 'Blank Póló #4', component = 11, drawable = 13, texture = 0, runtimeSlot = 4, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' }
         },
-        undershirt = {
-            { id = 'm_under_basic_001', label = 'Basic Undershirt', component = 8, drawable = 15, texture = 0, runtimeSlot = 1, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' }
-        },
-        pants = {
-            { id = 'm_pants_basic_001', label = 'Basic Pants', component = 4, drawable = 1, texture = 0, runtimeSlot = 1, preview = 'assets/pants.png', uv = 'assets/uv_pants.png' }
-        },
-        shoes = {
-            { id = 'm_shoes_basic_001', label = 'Basic Shoes', component = 6, drawable = 1, texture = 0, runtimeSlot = 1, preview = 'assets/shoes.png', uv = 'assets/uv_shoes.png' }
-        }
+        undershirt = {},
+        pants = {},
+        shoes = {}
     },
     female = {
-        tops = {
-            { id = 'f_top_basic_001', label = 'Basic T-Shirt', component = 11, drawable = 15, texture = 0, runtimeSlot = 1, preview = 'assets/tshirt.png', uv = 'assets/uv_tshirt.png' }
-        },
+        tops = {},
         undershirt = {},
         pants = {},
         shoes = {}

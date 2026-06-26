@@ -89,23 +89,14 @@ Config.RuntimeTextures = {
     -- Replace txd/txn/drawable values with your streamed blank clothing template names.
     slots = {
         tops = {
-            { slot = 1, component = 11, drawable = 15, texture = 0, txd = 'realrpg_blank_top_01', txn = 'blank_diffuse' },
-            { slot = 2, component = 11, drawable = 16, texture = 0, txd = 'realrpg_blank_top_02', txn = 'blank_diffuse' },
-            { slot = 3, component = 11, drawable = 17, texture = 0, txd = 'realrpg_blank_top_03', txn = 'blank_diffuse' },
-            { slot = 4, component = 11, drawable = 18, texture = 0, txd = 'realrpg_blank_top_04', txn = 'blank_diffuse' }
+            { slot = 1, component = 11, drawable = 0, texture = 0, txd = 'jbib_diff_000_a_uni', txn = 'jbib_diff_000_a_uni' },
+            { slot = 2, component = 11, drawable = 5, texture = 0, txd = 'jbib_diff_005_a_uni', txn = 'jbib_diff_005_a_uni' },
+            { slot = 3, component = 11, drawable = 7, texture = 0, txd = 'jbib_diff_007_a_uni', txn = 'jbib_diff_007_a_uni' },
+            { slot = 4, component = 11, drawable = 13, texture = 0, txd = 'jbib_diff_013_a_uni', txn = 'jbib_diff_013_a_uni' }
         },
-        undershirt = {
-            { slot = 1, component = 8, drawable = 15, texture = 0, txd = 'realrpg_blank_under_01', txn = 'blank_diffuse' },
-            { slot = 2, component = 8, drawable = 16, texture = 0, txd = 'realrpg_blank_under_02', txn = 'blank_diffuse' }
-        },
-        pants = {
-            { slot = 1, component = 4, drawable = 1, texture = 0, txd = 'realrpg_blank_pants_01', txn = 'blank_diffuse' },
-            { slot = 2, component = 4, drawable = 2, texture = 0, txd = 'realrpg_blank_pants_02', txn = 'blank_diffuse' }
-        },
-        shoes = {
-            { slot = 1, component = 6, drawable = 1, texture = 0, txd = 'realrpg_blank_shoes_01', txn = 'blank_diffuse' },
-            { slot = 2, component = 6, drawable = 2, texture = 0, txd = 'realrpg_blank_shoes_02', txn = 'blank_diffuse' }
-        }
+        undershirt = {},
+        pants = {},
+        shoes = {}
     }
 }
 
