@@ -35,9 +35,26 @@
       </aside>
 
       <section class="preview panel">
-        <h3><span></span> LIVE PREVIEW</h3>
-        <div class="dummy3d"><div id="shirt3d"><div id="shirtDesign"></div></div></div>
-        <div class="zoomBtns"><button>&#x2315;</button><button>&#x27F3;</button></div>
+        <h3><span></span> LIVE PREVIEW (3D)</h3>
+        <div class="preview3d-viewport" id="preview3dViewport">
+          <!-- Transparent area: the game camera is visible through here -->
+          <div class="preview3d-overlay" id="preview3dOverlay"></div>
+        </div>
+        <div class="preview3d-controls">
+          <button id="prev3dRotateLeft" title="Forgatás balra">&#x25C0;</button>
+          <button id="prev3dAutoRotate" title="Automatikus forgatás">&#x27F3;</button>
+          <button id="prev3dRotateRight" title="Forgatás jobbra">&#x25B6;</button>
+          <button id="prev3dZoomIn" title="Zoom be">&#x2795;</button>
+          <button id="prev3dZoomOut" title="Zoom ki">&#x2796;</button>
+          <button id="prev3dReset" title="Reset">&#x21BA;</button>
+        </div>
+        <div class="preview3d-views">
+          <button class="view-btn active" data-view="full">FULL</button>
+          <button class="view-btn" data-view="upper">UPPER</button>
+          <button class="view-btn" data-view="lower">LOWER</button>
+          <button class="view-btn" data-view="feet">FEET</button>
+          <button class="view-btn" data-view="head">HEAD</button>
+        </div>
         <div class="render-badge" id="renderBadge">RUNTIME</div>
       </section>
 

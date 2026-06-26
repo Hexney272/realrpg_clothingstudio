@@ -166,8 +166,9 @@ function drawUV() {
 }
 
 function updateShirtPreview() {
-    const el = document.getElementById('shirtDesign');
-    if (el) el.style.backgroundImage = `url(${canvas.toDataURL('image/png')})`;
+    // 3D preview is now handled by the game camera
+    // The canvas design is applied to the ped via DUI texture in real-time
+    // No need to update a CSS background anymore
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -646,3 +647,44 @@ canvas.addEventListener('mouseleave', () => { dragging = null; });
 
 renderCategories();
 drawUV();
+
+// ═══════════════════════════════════════════════════════════════
+// 3D PREVIEW CONTROLS
+// ═══════════════════════════════════════════════════════════════
+
+document.getElementById('prev3dRotateLeft').onclick = () => {
+    nui('preview3d_rotate', { direction: 'left', amount: 30 });
+};
+
+document.getElementById('prev3dRotateRight').onclick = () => {
+    nui('preview3d_rotate', { direction: 'right', amount: 30 });
+};
+
+document.getElementById('prev3dAutoRotate').onclick = (e) => {
+    e.target.classList.toggle('active');
+    nui('preview3d_autoRotate', {});
+};
+
+document.getElementById('prev3dZoomIn').onclick = () => {
+    nui('preview3d_zoom', { direction: 'in' });
+};
+
+document.getElementById('prev3dZoomOut').onclick = () => {
+    nui('preview3d_zoom', { direction: 'out' });
+};
+
+document.getElementById('prev3dReset').onclick = () => {
+    nui('preview3d_reset', {});
+    // Reset view buttons
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.view-btn[data-view="full"]').classList.add('active');
+};
+
+// View preset buttons
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        nui('preview3d_view', { view: btn.dataset.view });
+    };
+});

@@ -56,7 +56,9 @@ function RenderEngine.InitSlots()
         end
     end
 
-    debugPrint(('Slot allocations loaded: %d categories'):format(#(function() local n=0; for _ in pairs(slotAllocations) do n=n+1 end; return n end)()))
+    local categoryCount = 0
+    for _ in pairs(slotAllocations) do categoryCount = categoryCount + 1 end
+    debugPrint(('Slot allocations loaded: %d categories'):format(categoryCount))
 end
 
 function RenderEngine.AllocateSlot(category, designId)
