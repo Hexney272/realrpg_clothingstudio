@@ -14,6 +14,8 @@ RegisterNetEvent('realrpg_clothingstudio:client:openStudio', function(data)
     studioOpen = true
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'open', data = data })
+    -- Activate 3D preview camera
+    TriggerEvent('realrpg_clothingstudio:client:openStudio3D')
 end)
 
 RegisterNUICallback('close', function(_, cb)
@@ -22,6 +24,8 @@ RegisterNUICallback('close', function(_, cb)
     SetNuiFocus(false, false)
     -- Reset preview on close
     TriggerEvent('realrpg_clothingstudio:client:resetPreview')
+    -- Deactivate 3D preview camera
+    TriggerEvent('realrpg_clothingstudio:client:closeStudio3D')
     cb({ ok = true })
 end)
 
@@ -99,6 +103,7 @@ CreateThread(function()
                 SetNuiFocus(false, false)
                 SendNUIMessage({ action = 'forceClose' })
                 TriggerEvent('realrpg_clothingstudio:client:resetPreview')
+                TriggerEvent('realrpg_clothingstudio:client:closeStudio3D')
             end
         else
             Wait(500) -- Sleep when studio is closed

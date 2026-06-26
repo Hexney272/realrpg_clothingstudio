@@ -2,10 +2,10 @@
 *{box-sizing:border-box}
 body{margin:0;background:transparent;font-family:Arial Black,Arial,sans-serif;color:var(--text);overflow:hidden}
 .hidden{display:none!important}
-#app{width:100vw;height:100vh;background:radial-gradient(circle at 50% 50%,#182011 0,#060806 50%,#010101 100%);display:flex;flex-direction:column}
+#app{width:100vw;height:100vh;background:transparent;display:flex;flex-direction:column}
 
 /* TOP BAR */
-.topbar{height:68px;background:#070907;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.topbar{height:68px;background:#070907ee;border-bottom:1px solid var(--border);display:flex;align-items:center}
 .brand{width:280px;padding:10px 20px;border-right:1px solid var(--border)}
 .logo{font-size:28px;font-style:italic;color:white;text-shadow:0 0 12px rgba(215,255,0,.35)}
 .brand small{display:block;color:#9ca391;font-size:9px;text-transform:uppercase;margin-top:2px}
@@ -19,6 +19,7 @@ body{margin:0;background:transparent;font-family:Arial Black,Arial,sans-serif;co
 /* LAYOUT */
 .layout{display:grid;grid-template-columns:280px 320px 1fr 320px;gap:5px;padding:5px;height:calc(100vh - 148px)}
 .panel{background:linear-gradient(180deg,rgba(18,22,16,.96),rgba(6,8,6,.98));border:1px solid var(--border);box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);border-radius:4px}
+.panel.preview{background:transparent;border:none;box-shadow:none}
 
 /* LIBRARY PANEL */
 .library{padding:10px;overflow:hidden;position:relative;display:flex;flex-direction:column}
@@ -45,18 +46,20 @@ body{margin:0;background:transparent;font-family:Arial Black,Arial,sans-serif;co
 .details p{font-family:Arial,sans-serif;color:var(--muted);font-size:11px;line-height:1.4;margin:4px 0}
 #useTemplate{width:100%;margin-top:6px;padding:10px}
 
-/* PREVIEW PANEL */
+/* PREVIEW PANEL - 3D Camera Viewport */
 .preview{padding:10px;position:relative}
 .preview h3,.editor h3,.layers h3{font-size:11px;color:var(--accent);margin:0 0 6px}
 .preview h3 span{display:inline-block;width:10px;height:5px;background:var(--accent);border-radius:8px;margin-right:6px}
-.dummy3d{height:calc(100% - 50px);background:linear-gradient(160deg,#05090d,#0b0f12);display:flex;align-items:center;justify-content:center;perspective:800px;border-radius:4px}
-#shirt3d{width:120px;height:150px;background:#ddd;border-radius:30px 30px 18px 18px;transform:rotateY(-24deg) rotateX(4deg);position:relative;box-shadow:inset -20px 0 30px rgba(0,0,0,.25),0 25px 45px #000}
-#shirt3d:before,#shirt3d:after{content:"";position:absolute;top:30px;width:36px;height:68px;background:#d8d8d8;border-radius:16px;box-shadow:inset -10px 0 18px rgba(0,0,0,.18)}
-#shirt3d:before{left:-24px;transform:rotate(18deg)}
-#shirt3d:after{right:-24px;transform:rotate(-18deg)}
-#shirtDesign{position:absolute;left:18px;top:50px;width:84px;height:65px;background-size:contain;background-repeat:no-repeat;background-position:center;z-index:2}
-.zoomBtns{position:absolute;bottom:14px;right:14px}
-.zoomBtns button{background:#101410;color:white;border:1px solid var(--border);padding:7px;cursor:pointer}
+.preview3d-viewport{height:calc(100% - 100px);background:transparent;display:flex;align-items:center;justify-content:center;border-radius:4px;border:1px solid var(--border);position:relative;overflow:hidden}
+.preview3d-overlay{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+.preview3d-controls{display:flex;gap:4px;justify-content:center;margin-top:8px;padding:4px}
+.preview3d-controls button{background:#101410;color:var(--text);border:1px solid var(--border);padding:8px 12px;cursor:pointer;font-size:14px;border-radius:3px;transition:all .15s}
+.preview3d-controls button:hover{background:#1a2a10;border-color:var(--accent);color:var(--accent)}
+.preview3d-controls button.active{background:var(--accent);color:#111}
+.preview3d-views{display:flex;gap:3px;justify-content:center;margin-top:6px}
+.view-btn{background:#0c0f0b;color:#dbe3d5;border:1px solid #1b2118;padding:5px 9px;font-size:8px;font-weight:900;cursor:pointer;transition:all .15s;border-radius:2px}
+.view-btn:hover{background:#1a1f17;border-color:#2a3525}
+.view-btn.active{background:var(--accent);color:#111;box-shadow:0 0 8px rgba(215,255,0,.3)}
 .render-badge{position:absolute;top:10px;right:10px;background:#1a2a10;color:var(--accent);font-size:9px;font-weight:900;padding:4px 8px;border:1px solid var(--accent);border-radius:3px}
 
 /* EDITOR PANEL */
@@ -91,7 +94,7 @@ body{margin:0;background:transparent;font-family:Arial Black,Arial,sans-serif;co
 .props input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--accent);border-radius:50%;cursor:pointer}
 
 /* BOTTOM BAR */
-.bottombar{height:72px;background:#080a08;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:6px 12px}
+.bottombar{height:72px;background:#080a08ee;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:6px 12px}
 .barcode{width:260px;color:#666;font-size:11px;white-space:nowrap}
 .big{height:50px;padding:0 28px;border:0;background:#1c201a;color:#eee;font-size:18px;font-weight:900;cursor:pointer;border-radius:4px;transition:all .15s}
 .big:hover{background:#2a3025}

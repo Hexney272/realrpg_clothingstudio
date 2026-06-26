@@ -28,6 +28,7 @@ shared_scripts {
 client_scripts {
     'client/main.lua',
     'client/studio.lua',
+    'client/preview3d.lua',
     'client/wearables.lua',
     'client/preview.lua',
     'client/texture_runtime.lua',
