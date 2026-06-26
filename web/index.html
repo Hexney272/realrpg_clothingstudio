@@ -63,10 +63,15 @@
 
       <section class="preview panel">
         <h3><span></span> ÉLŐ ELŐNÉZET</h3>
-        <div class="previewArea">
-          <img id="previewImg" class="previewImage" src="" alt=""/>
-          <div id="previewOverlay" class="previewOverlay"></div>
+        <div class="preview3dWrap" id="preview3dWrap">
+          <div class="preview3dScene" id="preview3dScene">
+            <div class="preview3dGarment" id="preview3dGarment">
+              <canvas id="previewOverlayCanvas" class="previewCanvas" width="512" height="512"></canvas>
+            </div>
+          </div>
+          <div class="previewHint">Húzd az egérrel a forgatáshoz</div>
         </div>
+        <img id="previewBaseImg" style="display:none" src="" alt=""/>
       </section>
 
       <section class="editor panel">

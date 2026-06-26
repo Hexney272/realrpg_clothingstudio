@@ -166,22 +166,76 @@ function drawLayer(layer) {
 }
 
 function updateShirtPreview() {
-  const designDataUrl = canvas.toDataURL('image/png');
-  const overlay = $('previewOverlay');
-  const previewImg = $('previewImg');
+  const previewCanvas = $('previewOverlayCanvas');
+  const previewCtx = previewCanvas.getContext('2d');
+  const previewImg = $('previewBaseImg');
 
-  // A design overlay rákerül a preview képre
-  overlay.style.backgroundImage = `url(${designDataUrl})`;
+  // A preview-ban a ruha textúráját mutatjuk (a PNG amit a streamből exportáltunk)
+  // Erre rárajzoljuk a design-t overlay-ként
+  previewCtx.clearRect(0, 0, 512, 512);
 
-  // Ha van kiválasztott sablon, a preview kép a valódi textúra
-  if (state.selectedTemplate && state.selectedTemplate.preview) {
-    previewImg.src = state.selectedTemplate.preview;
-    previewImg.style.display = 'block';
-  } else {
-    previewImg.src = '';
-    previewImg.style.display = 'none';
+  // Először a base textúra (ha betöltődött)
+  if (previewImg.complete && previewImg.naturalWidth > 0) {
+    previewCtx.globalAlpha = 1.0;
+    previewCtx.drawImage(previewImg, 0, 0, 512, 512);
+  }
+
+  // Rá a design (a canvas tartalma) multiply blend-del
+  previewCtx.globalCompositeOperation = 'multiply';
+  previewCtx.globalAlpha = 0.9;
+  previewCtx.drawImage(canvas, 0, 0, 512, 512);
+  previewCtx.globalCompositeOperation = 'source-over';
+  previewCtx.globalAlpha = 1.0;
+
+  // Ha van sablon, base img-t frissítjük
+  if (state.selectedTemplate && state.selectedTemplate.uv) {
+    const targetSrc = state.selectedTemplate.uv;
+    if (!previewImg.src.endsWith(targetSrc)) {
+      previewImg.src = targetSrc;
+      previewImg.onload = () => drawUV(); // újrarajzol ha betöltődött
+    }
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 3D PREVIEW FORGATÁS (egérrel húzva forgatható a ruha textúra)
+// ═══════════════════════════════════════════════════════════════
+
+(function setup3DPreview() {
+  const wrap = $('preview3dWrap');
+  const scene = $('preview3dScene');
+  let rotY = 0;
+  let rotX = 0;
+  let isDragging = false;
+  let lastX = 0, lastY = 0;
+
+  function updateTransform() {
+    scene.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+  }
+
+  wrap.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    rotY += dx * 0.4;
+    rotX -= dy * 0.25;
+    rotX = Math.max(-45, Math.min(45, rotX));
+    lastX = e.clientX;
+    lastY = e.clientY;
+    updateTransform();
+  });
+
+  window.addEventListener('mouseup', () => { isDragging = false; });
+
+  updateTransform();
+})();
 
 // UV háttér textúra cache
 let uvBackgroundImage = null;
@@ -193,7 +247,13 @@ function loadUvBackground(src) {
   uvBackgroundImage = null;
   const img = new Image();
   img.onload = () => { uvBackgroundImage = img; drawUV(); };
-  img.onerror = () => { uvBackgroundImage = null; };
+  img.onerror = () => {
+    uvBackgroundImage = null;
+    uvBackgroundSrc = null;
+    console.warn('[RealRPG] UV háttér kép nem tölthető be:', src);
+    nui('notify', { message: 'A ruha textúra kép nem található: ' + src, type: 'error' });
+    drawUV();
+  };
   img.src = src;
 }
 
