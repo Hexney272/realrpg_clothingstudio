@@ -2,9 +2,9 @@ fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
-author 'RealRPG / ChatGPT'
-description 'RealRPG Clothing Studio - ingame clothing designer with runtime texture, sync, upload bridge, layer assets, AI, marketplace, admin, healthcheck and maintenance tools'
-version '1.3.0'
+author 'RealRPG'
+description 'RealRPG Clothing Studio - Ingame clothing designer with runtime/hybrid texture rendering for ESX/QBCore/Qbox'
+version '1.2.0'
 
 ui_page 'web/index.html'
 
@@ -15,14 +15,11 @@ files {
     'web/dui_texture.html',
     'web/assets/*.png',
     'web/assets/*.svg',
-    'stream/**/*',
-    'docs/*.md',
-    'INSTALL.md',
-    'TROUBLESHOOTING.md',
-    'RELEASE_NOTES.md'
+    'stream/**/*'
 }
 
 shared_scripts {
+    '@ox_lib/init.lua',
     'config.lua',
     'shared/templates.lua',
     'shared/framework.lua'
@@ -33,7 +30,8 @@ client_scripts {
     'client/studio.lua',
     'client/wearables.lua',
     'client/preview.lua',
-    'client/texture_runtime.lua'
+    'client/texture_runtime.lua',
+    'client/pack_export.lua'
 }
 
 server_scripts {
@@ -46,9 +44,19 @@ server_scripts {
     'server/admin.lua',
     'server/healthcheck.lua',
     'server/maintenance.lua',
+    'server/render_engine.lua',
+    'server/pack_export.lua',
     'server/main.lua'
 }
 
 dependencies {
     'oxmysql'
+}
+
+provides {
+    'realrpg_clothingstudio'
+}
+
+exports {
+    'UseClothingItem'
 }

@@ -1,128 +1,136 @@
+--[[
+    RealRPG Clothing Studio - Client Wearables
+    Handles equipping/unequipping custom clothing (components + props)
+    Integrates with texture_runtime.lua for DUI texture application
+]]
+
 local equipped = {}
 local remoteEquipped = {}
-local originalComponents = {}
 
-local function snapshotOriginal(category, component)
-    if originalComponents[category] then return end
+local function applyClothing(metadata)
+    if type(metadata) ~= 'table' then return end
     local ped = PlayerPedId()
-    originalComponents[category] = {
-        component = component,
-        drawable = GetPedDrawableVariation(ped, component),
-        texture = GetPedTextureVariation(ped, component)
-    }
-end
 
-local function applyClothingToPed(ped, metadata)
-    if not DoesEntityExist(ped) or type(metadata) ~= 'table' then return end
+    -- Determine if prop or component
+    local isProp = metadata.isProp or (metadata.prop ~= nil and metadata.component == nil)
 
-    local component = tonumber(metadata.component)
-    local drawable = tonumber(metadata.drawable)
-    local texture = tonumber(metadata.texture or 0)
-    if not component or drawable == nil then return end
+    if isProp then
+        -- PROP (hats, glasses, ears, watches, bracelets)
+        local propId = tonumber(metadata.prop)
+        local drawable = tonumber(metadata.drawable)
+        if not propId then return end
 
-    if ApplyRealRPGRuntimeTexture then
-        ApplyRealRPGRuntimeTexture(metadata)
-    end
-
-    SetPedComponentVariation(ped, component, drawable, texture, 2)
-end
-
-local function clearLocal(category)
-    local ped = PlayerPedId()
-    if category then
-        local original = originalComponents[category]
-        if original then
-            SetPedComponentVariation(ped, original.component, original.drawable or 0, original.texture or 0, 2)
-            originalComponents[category] = nil
+        if drawable and drawable >= 0 then
+            SetPedPropIndex(ped, propId, drawable, tonumber(metadata.texture or 0), true)
+        else
+            ClearPedProp(ped, propId)
         end
-        equipped[category] = nil
     else
-        for cat, original in pairs(originalComponents) do
-            SetPedComponentVariation(ped, original.component, original.drawable or 0, original.texture or 0, 2)
-            equipped[cat] = nil
+        -- COMPONENT (tops, pants, shoes, etc.)
+        local component = tonumber(metadata.component)
+        local drawable = tonumber(metadata.drawable)
+        local texture = tonumber(metadata.texture or 0)
+        if not component or not drawable then return end
+
+        SetPedComponentVariation(ped, component, drawable, texture, 2)
+    end
+
+    -- Apply runtime texture if available
+    if metadata.runtime and type(metadata.runtime) == 'table' then
+        if ApplyRealRPGRuntimeTexture then
+            ApplyRealRPGRuntimeTexture(metadata)
         end
-        originalComponents = {}
     end
 end
+
+local function removeClothing(metadata)
+    if type(metadata) ~= 'table' then return end
+    local ped = PlayerPedId()
+
+    local isProp = metadata.isProp or (metadata.prop ~= nil and metadata.component == nil)
+
+    if isProp then
+        local propId = tonumber(metadata.prop)
+        if propId then ClearPedProp(ped, propId) end
+    else
+        local component = tonumber(metadata.component)
+        if component then
+            -- Reset to default (drawable 0, texture 0)
+            SetPedComponentVariation(ped, component, 0, 0, 2)
+        end
+    end
+
+    -- Remove runtime texture
+    if metadata.runtime and RemoveRealRPGRuntimeTexture then
+        RemoveRealRPGRuntimeTexture(metadata)
+    end
+end
+
+-- ═══════════════════════════════════════════════════════════════
+-- EVENTS
+-- ═══════════════════════════════════════════════════════════════
 
 RegisterNetEvent('realrpg_clothingstudio:client:wearItem', function(metadata)
     if type(metadata) ~= 'table' then return end
 
-    local category = metadata.category or 'tops'
-    local component = tonumber(metadata.component)
-    if component then snapshotOriginal(category, component) end
+    -- Detect prop from category
+    local category = metadata.category
+    if category and Templates and Templates.IsProp then
+        metadata.isProp = Templates.IsProp(category)
+        if metadata.isProp and not metadata.prop then
+            local catMeta = Templates.Categories and Templates.Categories[category]
+            if catMeta then metadata.prop = catMeta.propId end
+        end
+    end
 
-    local ped = PlayerPedId()
-    applyClothingToPed(ped, metadata)
-    equipped[category] = metadata
+    applyClothing(metadata)
+    equipped[metadata.category or 'unknown'] = metadata
     TriggerServerEvent('realrpg_clothingstudio:server:setEquipped', metadata)
-    TriggerEvent('realrpg_clothingstudio:client:previewRevert')
 end)
 
 RegisterNetEvent('realrpg_clothingstudio:client:loadEquipped', function(data)
-    equipped = data or {}
-    local ped = PlayerPedId()
+    if type(data) ~= 'table' then return end
+    equipped = data
 
     for category, metadata in pairs(equipped) do
-        if metadata.component then snapshotOriginal(category, tonumber(metadata.component)) end
-        applyClothingToPed(ped, metadata)
+        if type(metadata) == 'table' then
+            -- Ensure isProp is set correctly
+            if Templates and Templates.IsProp then
+                metadata.isProp = Templates.IsProp(category)
+                if metadata.isProp and not metadata.prop then
+                    local catMeta = Templates.Categories and Templates.Categories[category]
+                    if catMeta then metadata.prop = catMeta.propId end
+                end
+            end
+            applyClothing(metadata)
+        end
+    end
+end)
+
+RegisterNetEvent('realrpg_clothingstudio:client:removeWearable', function(category)
+    if equipped[category] then
+        removeClothing(equipped[category])
+        equipped[category] = nil
+        TriggerServerEvent('realrpg_clothingstudio:server:removeEquipped', category)
     end
 end)
 
 RegisterNetEvent('realrpg_clothingstudio:client:syncWearable', function(serverId, metadata)
-    if type(metadata) ~= 'table' or not serverId then return end
+    if type(metadata) ~= 'table' then return end
+    if serverId == GetPlayerServerId(PlayerId()) then return end -- Skip self
 
     remoteEquipped[serverId] = remoteEquipped[serverId] or {}
-    remoteEquipped[serverId][metadata.category or 'tops'] = metadata
-
-    local player = GetPlayerFromServerId(serverId)
-    if player ~= -1 then
-        local ped = GetPlayerPed(player)
-        if ped ~= 0 and ped ~= PlayerPedId() then
-            applyClothingToPed(ped, metadata)
-        end
-    end
+    remoteEquipped[serverId][metadata.category or 'unknown'] = metadata
 end)
 
-RegisterNetEvent('realrpg_clothingstudio:client:clearRemoteWearable', function(serverId, category)
-    if not serverId then return end
-    if serverId == GetPlayerServerId(PlayerId()) then
-        clearLocal(category)
-        return
-    end
+-- ═══════════════════════════════════════════════════════════════
+-- CLEANUP on resource stop
+-- ═══════════════════════════════════════════════════════════════
 
-    if not remoteEquipped[serverId] then return end
-    if category then
-        remoteEquipped[serverId][category] = nil
-    else
-        remoteEquipped[serverId] = nil
-    end
-end)
-
-RegisterNetEvent('realrpg_clothingstudio:client:printLines', function(lines)
-    print('^2[RealRPG Clothing Studio]^7 Runtime slot status:')
-    for _, line in ipairs(lines or {}) do print(line) end
-end)
-
-RegisterCommand('rrcs_unwear', function(_, args)
-    local category = args and args[1]
-    if category == 'all' then category = nil end
-    TriggerServerEvent('realrpg_clothingstudio:server:clearEquipped', category)
-end)
-
-CreateThread(function()
-    while true do
-        Wait(5000)
-        for serverId, categories in pairs(remoteEquipped) do
-            local player = GetPlayerFromServerId(serverId)
-            if player ~= -1 then
-                local ped = GetPlayerPed(player)
-                if ped ~= 0 and ped ~= PlayerPedId() then
-                    for _, metadata in pairs(categories) do
-                        applyClothingToPed(ped, metadata)
-                    end
-                end
-            end
-        end
+AddEventHandler('onResourceStop', function(resourceName)
+    if resourceName ~= GetCurrentResourceName() then return end
+    -- Clear all runtime textures
+    if ClearRealRPGRuntimeTextureCache then
+        ClearRealRPGRuntimeTextureCache()
     end
 end)
