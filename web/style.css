@@ -59,15 +59,13 @@ button,input,select{font-family:inherit}
 #useTemplate,#loadDesignBtn,#publishDesignBtn,#unpublishDesignBtn,#buyMarketBtn{width:100%;margin-top:8px}
 
 /* ═══ PREVIEW ═══ */
-.preview{padding:12px;position:relative}
+.preview{padding:12px;position:relative;display:flex;flex-direction:column}
 .preview h3,.editor h3,.layers h3{font-size:12px;color:var(--accent);margin:0 0 8px;text-transform:uppercase;letter-spacing:1px}
 .preview h3 span{display:inline-block;width:12px;height:6px;background:var(--accent);border-radius:8px;margin-right:8px}
-.dummy3d{height:calc(100% - 30px);background:linear-gradient(160deg,#080706,#0f0d0a);display:flex;align-items:center;justify-content:center;perspective:800px;border-radius:4px}
-#shirt3d{width:155px;height:190px;background:#e8e0d0;border-radius:35px 35px 22px 22px;transform:rotateY(-24deg) rotateX(4deg);position:relative;box-shadow:inset -25px 0 35px rgba(0,0,0,.2),0 30px 60px rgba(0,0,0,.8)}
-#shirt3d:before,#shirt3d:after{content:"";position:absolute;top:35px;width:46px;height:88px;background:#e0d8c8;border-radius:18px;box-shadow:inset -12px 0 22px rgba(0,0,0,.15)}
-#shirt3d:before{left:-30px;transform:rotate(18deg)}
-#shirt3d:after{right:-30px;transform:rotate(-18deg)}
-#shirtDesign{position:absolute;left:26px;top:64px;width:102px;height:82px;background-size:contain;background-repeat:no-repeat;background-position:center;z-index:2}
+.previewArea{flex:1;background:linear-gradient(160deg,#080706,#0f0d0a);display:flex;align-items:center;justify-content:center;border-radius:4px;position:relative;overflow:hidden}
+.previewImage{max-width:90%;max-height:90%;object-fit:contain;opacity:.85;filter:drop-shadow(0 8px 24px rgba(0,0,0,.7))}
+.previewOverlay{position:absolute;inset:0;background-size:contain;background-repeat:no-repeat;background-position:center;mix-blend-mode:multiply;opacity:.9;pointer-events:none}
+.previewImage[src=""]{display:none}
 
 /* ═══ EDITOR ═══ */
 .editor{padding:12px;display:flex;flex-direction:column}

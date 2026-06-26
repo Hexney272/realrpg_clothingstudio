@@ -167,17 +167,19 @@ function drawLayer(layer) {
 
 function updateShirtPreview() {
   const designDataUrl = canvas.toDataURL('image/png');
-  const previewEl = $('shirtDesign');
-  previewEl.style.backgroundImage = `url(${designDataUrl})`;
+  const overlay = $('previewOverlay');
+  const previewImg = $('previewImg');
 
-  // Ha van kiválasztott sablon preview kép, azt mutatjuk a 3D dummy-n mint alap
-  const shirtEl = $('shirt3d');
+  // A design overlay rákerül a preview képre
+  overlay.style.backgroundImage = `url(${designDataUrl})`;
+
+  // Ha van kiválasztott sablon, a preview kép a valódi textúra
   if (state.selectedTemplate && state.selectedTemplate.preview) {
-    shirtEl.style.backgroundImage = `url(${state.selectedTemplate.preview})`;
-    shirtEl.style.backgroundSize = 'cover';
-    shirtEl.style.backgroundPosition = 'center';
+    previewImg.src = state.selectedTemplate.preview;
+    previewImg.style.display = 'block';
   } else {
-    shirtEl.style.backgroundImage = 'none';
+    previewImg.src = '';
+    previewImg.style.display = 'none';
   }
 }
 
