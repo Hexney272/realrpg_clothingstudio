@@ -61,17 +61,18 @@
         </section>
       </aside>
 
-      <section class="preview panel">
+      <section class="preview panel previewTransparent">
         <h3><span></span> ÉLŐ ELŐNÉZET</h3>
-        <div class="preview3dWrap" id="preview3dWrap">
-          <div class="preview3dScene" id="preview3dScene">
-            <div class="preview3dGarment" id="preview3dGarment">
-              <canvas id="previewOverlayCanvas" class="previewCanvas" width="512" height="512"></canvas>
-            </div>
+        <div class="previewPedArea" id="previewPedArea">
+          <p class="previewPedHint">A karaktereden látod a designt real-time</p>
+          <div class="previewCamControls">
+            <button id="camRotLeftBtn" class="camBtn">◀</button>
+            <button id="camResetBtn" class="camBtn">⟳</button>
+            <button id="camRotRightBtn" class="camBtn">▶</button>
+            <button id="camZoomInBtn" class="camBtn">+</button>
+            <button id="camZoomOutBtn" class="camBtn">−</button>
           </div>
-          <div class="previewHint">Húzd az egérrel a forgatáshoz</div>
         </div>
-        <img id="previewBaseImg" style="display:none" src="" alt=""/>
       </section>
 
       <section class="editor panel">

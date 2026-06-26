@@ -165,77 +165,22 @@ function drawLayer(layer) {
   ctx.restore();
 }
 
+// Preview: a canvas tartalmát elküldjük a kliensnek aki a ped-en DUI-val megjeleníti
+let _previewThrottle = null;
 function updateShirtPreview() {
-  const previewCanvas = $('previewOverlayCanvas');
-  const previewCtx = previewCanvas.getContext('2d');
-  const previewImg = $('previewBaseImg');
+  if (_previewThrottle) return;
+  _previewThrottle = setTimeout(() => { _previewThrottle = null; }, 120);
 
-  // A preview-ban a ruha textúráját mutatjuk (a PNG amit a streamből exportáltunk)
-  // Erre rárajzoljuk a design-t overlay-ként
-  previewCtx.clearRect(0, 0, 512, 512);
-
-  // Először a base textúra (ha betöltődött)
-  if (previewImg.complete && previewImg.naturalWidth > 0) {
-    previewCtx.globalAlpha = 1.0;
-    previewCtx.drawImage(previewImg, 0, 0, 512, 512);
-  }
-
-  // Rá a design (a canvas tartalma) multiply blend-del
-  previewCtx.globalCompositeOperation = 'multiply';
-  previewCtx.globalAlpha = 0.9;
-  previewCtx.drawImage(canvas, 0, 0, 512, 512);
-  previewCtx.globalCompositeOperation = 'source-over';
-  previewCtx.globalAlpha = 1.0;
-
-  // Ha van sablon, base img-t frissítjük
-  if (state.selectedTemplate && state.selectedTemplate.uv) {
-    const targetSrc = state.selectedTemplate.uv;
-    if (!previewImg.src.endsWith(targetSrc)) {
-      previewImg.src = targetSrc;
-      previewImg.onload = () => drawUV(); // újrarajzol ha betöltődött
-    }
-  }
+  const dataUrl = canvas.toDataURL('image/png');
+  nui('updatePreviewTexture', { image: dataUrl });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// 3D PREVIEW FORGATÁS (egérrel húzva forgatható a ruha textúra)
-// ═══════════════════════════════════════════════════════════════
-
-(function setup3DPreview() {
-  const wrap = $('preview3dWrap');
-  const scene = $('preview3dScene');
-  let rotY = 0;
-  let rotX = 0;
-  let isDragging = false;
-  let lastX = 0, lastY = 0;
-
-  function updateTransform() {
-    scene.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-  }
-
-  wrap.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    lastX = e.clientX;
-    lastY = e.clientY;
-    e.preventDefault();
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    const dx = e.clientX - lastX;
-    const dy = e.clientY - lastY;
-    rotY += dx * 0.4;
-    rotX -= dy * 0.25;
-    rotX = Math.max(-45, Math.min(45, rotX));
-    lastX = e.clientX;
-    lastY = e.clientY;
-    updateTransform();
-  });
-
-  window.addEventListener('mouseup', () => { isDragging = false; });
-
-  updateTransform();
-})();
+// Kamera vezérlés a Live Preview-hoz (NUI → client Lua)
+$('camRotLeftBtn').onclick = () => nui('previewCam', { action: 'rotateLeft' });
+$('camRotRightBtn').onclick = () => nui('previewCam', { action: 'rotateRight' });
+$('camResetBtn').onclick = () => nui('previewCam', { action: 'reset' });
+$('camZoomInBtn').onclick = () => nui('previewCam', { action: 'zoomIn' });
+$('camZoomOutBtn').onclick = () => nui('previewCam', { action: 'zoomOut' });
 
 // UV háttér textúra cache
 let uvBackgroundImage = null;
