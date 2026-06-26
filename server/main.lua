@@ -188,13 +188,6 @@ local function openStudioFor(src, stationIndex)
         myDesigns = designs,
         marketplace = marketplace,
         marketplaceEnabled = Config.Marketplace and Config.Marketplace.enabled or false,
-        aiEnabled = Config.AI.enabled,
-        ai = {
-            enabled = Config.AI.enabled,
-            cooldownSeconds = Config.AI.cooldownSeconds,
-            maxPromptLength = Config.AI.maxPromptLength,
-            addGeneratedImageAsLayer = Config.AI.addGeneratedImageAsLayer
-        },
         maxUploadMB = Config.Studio.maxUploadMB,
         uploadBridge = {
             enabled = UploadBridge and UploadBridge.IsEnabled and UploadBridge.IsEnabled() or false,
@@ -558,48 +551,9 @@ RegisterNetEvent('realrpg_clothingstudio:server:requestEquipped', function()
 end)
 
 RegisterNetEvent('realrpg_clothingstudio:server:generateAI', function(payload)
-    local src = source
-    print(('[^3RealRPG AI^0] Generate request from player %d | prompt: %s'):format(src, payload and payload.prompt and payload.prompt:sub(1, 40) or 'nil'))
-    if not AIBridge or not AIBridge.Generate then
-        notify(src, 'AI bridge nem töltődött be.', 'error')
-        TriggerClientEvent('realrpg_clothingstudio:client:aiResult', src, { ok = false, error = 'bridge_not_loaded' })
-        return
-    end
-
-    AIBridge.Generate(src, payload or {})
+    -- AI eltávolítva
 end)
 
-
-RegisterCommand(Config.Admin.aiCheckCommand or 'rrcs_aicheck', function(src)
-    local allowedJobs = 'everyone'
-    if Config.AI and Config.AI.allowedJobs then
-        local parts = {}
-        for job, grade in pairs(Config.AI.allowedJobs) do
-            parts[#parts + 1] = ('%s:%s'):format(job, grade)
-        end
-        allowedJobs = table.concat(parts, ', ')
-    end
-
-    local lines = {
-        'RealRPG Clothing Studio AI bridge check',
-        ('Enabled: %s'):format(Config.AI and tostring(Config.AI.enabled) or 'false'),
-        ('Provider: %s'):format(Config.AI and Config.AI.provider or 'none'),
-        ('Model: %s'):format(Config.AI and Config.AI.model or 'nil'),
-        ('API key set: %s'):format((Config.AI and Config.AI.apiKey and Config.AI.apiKey ~= '') and 'yes' or 'no'),
-        ('Cooldown: %s sec'):format(Config.AI and Config.AI.cooldownSeconds or 'nil'),
-        ('Upload result to CDN: %s'):format(Config.AI and tostring(Config.AI.uploadResultToCdn) or 'false'),
-        ('Upload bridge enabled: %s'):format(UploadBridge and UploadBridge.IsEnabled and tostring(UploadBridge.IsEnabled()) or 'false'),
-        ('Prompt history: %s'):format(Config.AI and tostring(Config.AI.storePromptHistory) or 'false'),
-        ('Allowed jobs: %s'):format(allowedJobs),
-    }
-
-    if src == 0 then
-        print(table.concat(lines, '\n'))
-    else
-        notify(src, 'AI bridge ellenőrzés kiírva az F8 konzolba.', 'info')
-        TriggerClientEvent('realrpg_clothingstudio:client:printLines', src, lines)
-    end
-end, false)
 
 RegisterCommand(Config.Admin.slotCommand or 'rrcs_slots', function(src)
     local rows = DB.GetAllUsedSlots()

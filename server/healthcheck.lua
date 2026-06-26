@@ -102,7 +102,6 @@ function RRCSHealth.BuildReport(mode)
         'web/style.css',
         'web/dui_texture.html',
         'server/upload_bridge.lua',
-        'server/ai_bridge.lua',
         'server/admin.lua',
         'server/healthcheck.lua',
         'stream/blank_templates/manifest.json'
@@ -165,18 +164,6 @@ function RRCSHealth.BuildReport(mode)
             ok('upload webhook', 'set')
         end
         if Config.UploadBridge and Config.UploadBridge.uploadLayerAssets then ok('layer asset upload', 'enabled') else warn('layer asset upload', 'disabled') end
-    end
-
-    if Config.Healthcheck and Config.Healthcheck.validateAI then
-        if Config.AI and Config.AI.enabled then
-            if Config.AI.apiKey and Config.AI.apiKey ~= '' then ok('AI api key', 'set') else fail('AI api key', 'missing') end
-            ok('AI model', Config.AI.model or 'nil')
-            if Config.AI.uploadResultToCdn and not (UploadBridge and UploadBridge.IsEnabled and UploadBridge.IsEnabled()) then
-                warn('AI CDN upload', 'AI upload enabled but upload bridge disabled')
-            end
-        else
-            warn('AI bridge', 'disabled')
-        end
     end
 
     if Config.Healthcheck and Config.Healthcheck.validateMarketplace then

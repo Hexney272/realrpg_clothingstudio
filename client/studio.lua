@@ -48,11 +48,6 @@ RegisterNUICallback('notify', function(data, cb)
     cb({ ok = true })
 end)
 
-RegisterNUICallback('generateAI', function(data, cb)
-    TriggerServerEvent('realrpg_clothingstudio:server:generateAI', data)
-    cb({ ok = true })
-end)
-
 
 RegisterNUICallback('uploadBegin', function(data, cb)
     TriggerServerEvent('realrpg_clothingstudio:server:uploadBegin', data)
@@ -71,10 +66,6 @@ end)
 
 RegisterNetEvent('realrpg_clothingstudio:client:uploadResult', function(result)
     SendNUIMessage({ action = 'uploadResult', result = result })
-end)
-
-RegisterNetEvent('realrpg_clothingstudio:client:aiResult', function(result)
-    SendNUIMessage({ action = 'aiResult', result = result })
 end)
 
 RegisterNetEvent('realrpg_clothingstudio:client:marketplaceData', function(rows)

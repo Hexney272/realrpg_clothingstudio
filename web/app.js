@@ -22,9 +22,6 @@ const state = {
   gridEnabled: true,
   mirrorEnabled: false,
   aiEnabled: false,
-  ai: { enabled: false, cooldownSeconds: 60, maxPromptLength: 420, addGeneratedImageAsLayer: true },
-  aiBusy: false,
-  aiPromptHistory: [],
   maxUploadMB: 4,
   uploadBridge: { enabled: false, chunkSize: 240000, failSaveIfUploadFails: false, uploadLayerAssets: false, failLayerUploadIfUploadFails: false },
   pendingUploads: {},
@@ -479,37 +476,6 @@ function addImage(src, options = {}) {
 }
 
 
-function addAiImageLayer(result) {
-  if (!result || !result.ok) return;
-  const source = result.url || result.dataUrl;
-  if (!source) {
-    nui('notify', { message: 'Az AI nem adott vissza használható képet.', type: 'error' });
-    return;
-  }
-
-  const name = result.prompt ? `AI: ${result.prompt.slice(0, 32)}` : 'AI Design Réteg';
-  addImage(source, {
-    name,
-    assetUrl: result.url || null
-  });
-
-  if (result.prompt) {
-    state.aiPromptHistory.unshift({ prompt: result.prompt, url: result.url || null, at: Date.now() });
-    state.aiPromptHistory = state.aiPromptHistory.slice(0, 12);
-  }
-}
-
-function setAiBusy(busy) {
-  state.aiBusy = busy;
-  const btn = $('generateAi');
-  const aiBtn = $('aiBtn');
-  if (btn) {
-    btn.disabled = busy;
-    btn.textContent = busy ? 'GENERÁLÁS...' : 'GENERÁLÁS';
-  }
-  if (aiBtn) aiBtn.disabled = busy;
-}
-
 function addText() {
   pushHistory();
   const layer = {
@@ -852,8 +818,6 @@ $('buyMarketBtn').onclick = () => {
 $('imageBtn').onclick = () => $('fileInput').click();
 $('textBtn').onclick = addText;
 $('shapeBtn').onclick = addShape;
-$('buildBtn').onclick = () => nui('notify', { message: 'Az építés az editor oldalon történik.', type: 'info' });
-$('repBtn').onclick = () => nui('notify', { message: 'A hírnév funkció egy későbbi frissítésben érkezik.', type: 'info' });
 $('pasteBtn').onclick = async () => {
   if (!navigator.clipboard || !navigator.clipboard.read) {
     nui('notify', { message: 'A vágólap beillesztés nem támogatott.', type: 'error' });
@@ -898,22 +862,6 @@ $('fileInput').onchange = (e) => {
   reader.readAsDataURL(file);
   e.target.value = '';
 };
-$('generateAi').onclick = () => {
-  if (!state.aiEnabled || !state.ai.enabled) {
-    return nui('notify', { message: 'Az AI mód jelenleg ki van kapcsolva.', type: 'error' });
-  }
-  if (state.aiBusy) return;
-
-  const prompt = $('aiPrompt').value.trim();
-  if (!prompt) return nui('notify', { message: 'Adj meg egy AI promptot.', type: 'error' });
-  if (prompt.length > Number(state.ai.maxPromptLength || 420)) {
-    return nui('notify', { message: `Túl hosszú prompt. Maximum: ${state.ai.maxPromptLength} karakter.`, type: 'error' });
-  }
-
-  setAiBusy(true);
-  nui('generateAI', { prompt, gender: state.gender, category: state.category, templateId: state.selectedTemplate?.id || null });
-};
-$('aiBtn').onclick = () => $('generateAi').click();
 $('gridBtn').onclick = () => { state.gridEnabled = !state.gridEnabled; $('gridBtn').classList.toggle('active', state.gridEnabled); drawUV(); };
 $('mirrorBtn').onclick = () => { state.mirrorEnabled = !state.mirrorEnabled; $('mirrorBtn').classList.toggle('active', state.mirrorEnabled); drawUV(); };
 $('lockBtn').onclick = () => { $('lockBtn').classList.toggle('active'); nui('notify', { message: 'UV zárolás vizuális jelző.', type: 'info' }); };
@@ -1065,11 +1013,7 @@ window.addEventListener('message', (e) => {
     state.myDesigns = msg.data.myDesigns || [];
     state.marketplace = msg.data.marketplace || [];
     state.marketplaceEnabled = !!msg.data.marketplaceEnabled;
-    state.aiEnabled = !!msg.data.aiEnabled;
-    state.ai = msg.data.ai || { enabled: state.aiEnabled, cooldownSeconds: 60, maxPromptLength: 420, addGeneratedImageAsLayer: true };
     state.maxUploadMB = msg.data.maxUploadMB || 4;
-    $('generateAi').disabled = !state.aiEnabled;
-    $('aiBtn').disabled = !state.aiEnabled;
     state.uploadBridge = msg.data.uploadBridge || { enabled: false, chunkSize: 240000, failSaveIfUploadFails: false, uploadLayerAssets: false, failLayerUploadIfUploadFails: false };
     resetCanvasState();
     setActiveTab('library');
@@ -1095,21 +1039,6 @@ window.addEventListener('message', (e) => {
   }
 
 
-
-  if (msg.action === 'aiResult') {
-    setAiBusy(false);
-    const result = msg.result || {};
-    if (!result.ok) {
-      nui('notify', { message: `AI hiba: ${result.error || 'ismeretlen'}`, type: 'error' });
-      return;
-    }
-    addAiImageLayer(result);
-    if (result.uploadError) {
-      nui('notify', { message: `AI kép elkészült, de CDN feltöltési hiba: ${result.uploadError}`, type: 'error' });
-    } else {
-      nui('notify', { message: 'AI design réteg hozzáadva.', type: 'success' });
-    }
-  }
 
   if (msg.action === 'uploadResult') {
     const result = msg.result || {};

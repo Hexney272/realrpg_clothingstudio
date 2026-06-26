@@ -70,25 +70,6 @@ Config.UploadBridge = {
     failLayerUploadIfUploadFails = false
 }
 
-Config.AI = {
-    enabled = false,
-    provider = 'gemini',
-    apiKey = '',
-    model = 'gemini-2.5-flash-image',
-    -- Az endpoint már nem kell - az ai_bridge.lua az Interactions API-t használja automatikusan
-    endpoint = 'https://generativelanguage.googleapis.com/v1beta/interactions',
-    cooldownSeconds = 60,
-    maxPromptLength = 420,
-    maxNegativePromptLength = 240,
-    uploadResultToCdn = true,
-    failIfUploadFails = false,
-    storePromptHistory = true,
-    addGeneratedImageAsLayer = true,
-    systemPrefix = 'Create a clean transparent clothing print design for a FiveM/GTA roleplay server. Centered 2D apparel graphic, no mockup, no shirt photo, no watermark, high contrast, usable as a 1024x1024 texture layer. Prompt: ',
-    blockedWords = { 'nude', 'porn', 'sex', 'swastika', 'nazi', 'hitler' },
-    allowedJobs = nil, -- nil = everyone. Example: { burgershot = 2, police = 4 }
-}
-
 Config.InteractDistance = 2.0
 
 -- Runtime texture foundation.
@@ -181,12 +162,10 @@ Config.Healthcheck = {
     validateDatabase = true,
     validateRuntimeSlots = true,
     validateUploadBridge = true,
-    validateAI = true,
     validateMarketplace = true,
     printRecommendations = true,
     autoRunOnResourceStart = false,
     warnIfUploadDisabled = true,
-    warnIfAIEnabledWithoutUpload = true,
     expectedTables = {
         'realrpg_clothing_designs',
         'realrpg_clothing_equipped',
@@ -237,7 +216,6 @@ Config.Admin = {
     packCheckCommand = 'rrcs_packcheck',
     uploadCheckCommand = 'rrcs_uploadcheck',
     assetCheckCommand = 'rrcs_assetcheck',
-    aiCheckCommand = 'rrcs_aicheck',
     marketCheckCommand = 'rrcs_marketcheck',
     claimMarketCommand = 'rrcs_claimmarket',
     adminCheckCommand = 'rrcs_admincheck',

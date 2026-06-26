@@ -42,7 +42,6 @@ server_scripts {
     'server/framework.lua',
     'server/inventory.lua',
     'server/upload_bridge.lua',
-    'server/ai_bridge.lua',
     'server/admin.lua',
     'server/healthcheck.lua',
     'server/maintenance.lua',
