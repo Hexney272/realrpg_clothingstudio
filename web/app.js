@@ -166,15 +166,49 @@ function drawLayer(layer) {
 }
 
 function updateShirtPreview() {
-  $('shirtDesign').style.backgroundImage = `url(${canvas.toDataURL('image/png')})`;
+  const designDataUrl = canvas.toDataURL('image/png');
+  const previewEl = $('shirtDesign');
+  previewEl.style.backgroundImage = `url(${designDataUrl})`;
+
+  // Ha van kiválasztott sablon preview kép, azt mutatjuk a 3D dummy-n mint alap
+  const shirtEl = $('shirt3d');
+  if (state.selectedTemplate && state.selectedTemplate.preview) {
+    shirtEl.style.backgroundImage = `url(${state.selectedTemplate.preview})`;
+    shirtEl.style.backgroundSize = 'cover';
+    shirtEl.style.backgroundPosition = 'center';
+  } else {
+    shirtEl.style.backgroundImage = 'none';
+  }
+}
+
+// UV háttér textúra cache
+let uvBackgroundImage = null;
+let uvBackgroundSrc = null;
+
+function loadUvBackground(src) {
+  if (!src || src === uvBackgroundSrc) return;
+  uvBackgroundSrc = src;
+  uvBackgroundImage = null;
+  const img = new Image();
+  img.onload = () => { uvBackgroundImage = img; drawUV(); };
+  img.onerror = () => { uvBackgroundImage = null; };
+  img.src = src;
 }
 
 function drawUV() {
   ctx.clearRect(0, 0, 1024, 1024);
   ctx.fillStyle = '#f5f5f5';
   ctx.fillRect(0, 0, 1024, 1024);
+
+  // Valódi ruha textúra háttér (ha van kiválasztott sablon UV-je)
+  if (uvBackgroundImage) {
+    ctx.globalAlpha = 0.35;
+    ctx.drawImage(uvBackgroundImage, 0, 0, 1024, 1024);
+    ctx.globalAlpha = 1.0;
+  }
+
   drawGrid();
-  drawUvGuides();
+  if (!uvBackgroundImage) drawUvGuides();
   state.layers.forEach(drawLayer);
 
   // Kijelölt layer keret + sarok fogantyúk
@@ -188,7 +222,6 @@ function drawUV() {
     ctx.strokeRect(bounds.x, bounds.y, bounds.w, bounds.h);
     ctx.setLineDash([]);
 
-    // Sarok fogantyúk (resize jelzők)
     const handleSize = 8;
     ctx.fillStyle = '#d4a853';
     const corners = [
@@ -312,6 +345,15 @@ function selectTemplate(template) {
   $('activeTemplate').textContent = `${template.id} - 1024x1024`;
   renderSidebar();
   nui('previewClothing', { template });
+
+  // UV textúra betöltése háttérnek
+  if (template.uv) {
+    loadUvBackground(template.uv);
+  } else {
+    uvBackgroundImage = null;
+    uvBackgroundSrc = null;
+    drawUV();
+  }
 }
 
 function selectSavedDesign(design) {
