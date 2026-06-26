@@ -1,33 +1,50 @@
--- Add these to ox_inventory/data/items.lua
+-- ════════════════════════════════════════════════════════════════
+-- ITEM DEFINÍCIÓK a seerpg_inventory / ox_inventory shared/items.lua fájlhoz
+-- 
+-- A server.export mező biztosítja hogy az item használatakor
+-- a realrpg_clothingstudio resource UseClothingItem exportja hívódik meg.
+-- ════════════════════════════════════════════════════════════════
 
 ['printed_tshirt'] = {
-    label = 'Printed T-Shirt',
+    label = 'Nyomtatott Póló',
     weight = 250,
     stack = false,
     close = true,
-    description = 'Egyedi nyomtatott póló'
+    description = 'Egyedi nyomtatott póló',
+    server = {
+        export = 'realrpg_clothingstudio.UseClothingItem'
+    }
 },
 
 ['printed_undershirt'] = {
-    label = 'Printed Undershirt',
+    label = 'Nyomtatott Alsó Felső',
     weight = 250,
     stack = false,
     close = true,
-    description = 'Egyedi nyomtatott alsó felső'
+    description = 'Egyedi nyomtatott alsó felső',
+    server = {
+        export = 'realrpg_clothingstudio.UseClothingItem'
+    }
 },
 
 ['printed_pants'] = {
-    label = 'Printed Pants',
+    label = 'Nyomtatott Nadrág',
     weight = 350,
     stack = false,
     close = true,
-    description = 'Egyedi nyomtatott nadrág'
+    description = 'Egyedi nyomtatott nadrág',
+    server = {
+        export = 'realrpg_clothingstudio.UseClothingItem'
+    }
 },
 
 ['printed_shoes'] = {
-    label = 'Printed Shoes',
+    label = 'Nyomtatott Cipő',
     weight = 500,
     stack = false,
     close = true,
-    description = 'Egyedi nyomtatott cipő'
+    description = 'Egyedi nyomtatott cipő',
+    server = {
+        export = 'realrpg_clothingstudio.UseClothingItem'
+    }
 },

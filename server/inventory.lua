@@ -25,15 +25,14 @@ function Inv.AddPrintedItem(src, category, metadata)
     return false, 'Inventory nem elérhető.'
 end
 
--- ox_inventory usable item registration
-CreateThread(function()
-    Wait(1000)
-    if Config.Inventory ~= 'ox_inventory' or GetResourceState('ox_inventory') ~= 'started' then return end
+-- Item use handler: az inventory rendszer hívja server.export-ként
+-- Az item definícióban: server = { export = 'realrpg_clothingstudio.UseClothingItem' }
+-- A data tábla tartalmazza: name, slot, count, metadata
+function Inv.UseClothingItem(source, data)
+    if type(data) ~= 'table' then return end
+    local metadata = data.metadata or {}
+    TriggerClientEvent('realrpg_clothingstudio:client:wearItem', source, metadata)
+end
 
-    for category, itemName in pairs(Config.Printing.items) do
-        exports['ox_inventory']:RegisterUsableItem(itemName, function(source, item)
-            local metadata = item and item.metadata or {}
-            TriggerClientEvent('realrpg_clothingstudio:client:wearItem', source, metadata)
-        end)
-    end
-end)
+-- Export regisztráció (a server.export = 'realrpg_clothingstudio.UseClothingItem' használja)
+exports('UseClothingItem', Inv.UseClothingItem)
